@@ -1,0 +1,46 @@
+[package]
+name = "tare-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "tare_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tare"
+path = "src/main.rs"
+
+# Deterministic Calibrated Bench fixture generator. Run with:
+#   cargo run -p tare-cli --example seed_calibrated_bench --offline -- --db /tmp/tare-calibrated-bench.db
+[[example]]
+name = "seed_calibrated_bench"
+path = "examples/seed_calibrated_bench.rs"
+
+[dependencies]
+tare-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml_edit = "0.22"
+tare-store.workspace = true
+tare-proxy.workspace = true
+tare-daemon.workspace = true
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros", "signal", "net", "io-util", "time"] }
+axum = "0.8.9"
+reqwest = { version = "0.13.4", default-features = false, features = ["stream"] }
+sysinfo = { version = "0.39.5", default-features = false, features = ["system"] }
+notify-debouncer-full = "0.7.0"
+
+[features]
+# The long-running `tare daemon` loop (clock + sleep). Excluded from the offline gate like
+# `gui`; the pure delivery tick (anomaly_delivery_tick) is always compiled and tested.
+daemon = []
+# Bounded HTTPS auto-fetch of the live LiteLLM/models.dev price maps. OFF by default
+# and OUT of the offline gate (like `webhooks`/`gui`): it pulls a TLS stack not in the offline cargo
+# cache. The tested converters + `tare pricing refresh --from FILE` work without it; this only adds
+# fetching the well-known URLs, smoke-tested manually (not in CI). Uses `native-tls` (the OS TLS —
+# Security.framework on macOS, schannel on Windows) rather than rustls: it avoids the heavy aws-lc-rs
+# C/asm build reqwest's `rustls` feature pulls, which is the pragmatic choice for a feature-gated,
+# manually-verified fetch. A cross-platform release can switch to `rustls` once those crates are cached.
+pricing-fetch = ["reqwest/native-tls", "reqwest/blocking"]

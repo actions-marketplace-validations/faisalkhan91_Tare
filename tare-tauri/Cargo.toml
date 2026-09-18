@@ -1,0 +1,38 @@
+[package]
+name = "tare-tauri"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Tauri 2 desktop shell and tested command adapter over tare-core."
+
+[lib]
+name = "tare_tauri"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tare-desktop"
+path = "src/main.rs"
+
+[dependencies]
+tare-core = { workspace = true }
+tare-store = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+# The Tauri runtime is opt-in: the default build (and scripts/ci.sh) compiles only the
+# thin adapter below. The full desktop shell + tray compiles under `--features gui`.
+tauri = { version = "2", features = ["tray-icon"], optional = true }
+# Native OS notifications are driven from Rust through the app's existing `notify` command, so no
+# frontend plugin binding or additional frontend capability permission is needed.
+tauri-plugin-notification = { version = "2", optional = true }
+
+[build-dependencies]
+tauri-build = { version = "2", optional = true }
+
+[features]
+default = []
+gui = ["dep:tauri", "dep:tauri-build", "dep:tauri-plugin-notification"]
+# gui + Tauri's `test` harness (mock_builder / get_ipc_response) for the IPC-seam round-trip tests in
+# gui.rs. Kept SEPARATE from `gui` so the shipped desktop build never links the test utilities; run the
+# gui unit tests with `--features gui-test` (see scripts/ci.sh). Storm-tier: compiling either feature
+# links the full tauri/wry/WebKit tree, so run it once on a calm machine / in CI, not in a tight loop.
+gui-test = ["gui", "tauri/test"]

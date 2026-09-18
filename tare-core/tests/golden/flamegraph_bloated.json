@@ -1,0 +1,159 @@
+{
+  "run_id": "bloated_system_prompt",
+  "pricing_version": "fixture-2026.06",
+  "effective_date": "2026-06-01",
+  "root": {
+    "name": "run bloated_system_prompt",
+    "tokens": 9941,
+    "micros": 53545,
+    "children": [
+      {
+        "name": "step 1 · claude-opus-4-8",
+        "tokens": 3313,
+        "micros": 17845,
+        "children": [
+          {
+            "name": "System prompt",
+            "tokens": 3242,
+            "micros": 16210,
+            "children": [
+              {
+                "name": "fresh",
+                "tokens": 3242,
+                "micros": 16210,
+                "cache_class": "fresh",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Output",
+            "tokens": 64,
+            "micros": 1600,
+            "children": [
+              {
+                "name": "output",
+                "tokens": 64,
+                "micros": 1600,
+                "cache_class": "output",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "User messages",
+            "tokens": 7,
+            "micros": 35,
+            "children": [
+              {
+                "name": "fresh",
+                "tokens": 7,
+                "micros": 35,
+                "cache_class": "fresh",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "step 2 · claude-opus-4-8",
+        "tokens": 3314,
+        "micros": 17850,
+        "children": [
+          {
+            "name": "System prompt",
+            "tokens": 3240,
+            "micros": 16200,
+            "children": [
+              {
+                "name": "fresh",
+                "tokens": 3240,
+                "micros": 16200,
+                "cache_class": "fresh",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Output",
+            "tokens": 64,
+            "micros": 1600,
+            "children": [
+              {
+                "name": "output",
+                "tokens": 64,
+                "micros": 1600,
+                "cache_class": "output",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "User messages",
+            "tokens": 10,
+            "micros": 50,
+            "children": [
+              {
+                "name": "fresh",
+                "tokens": 10,
+                "micros": 50,
+                "cache_class": "fresh",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "step 3 · claude-opus-4-8",
+        "tokens": 3314,
+        "micros": 17850,
+        "children": [
+          {
+            "name": "System prompt",
+            "tokens": 3242,
+            "micros": 16210,
+            "children": [
+              {
+                "name": "fresh",
+                "tokens": 3242,
+                "micros": 16210,
+                "cache_class": "fresh",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Output",
+            "tokens": 64,
+            "micros": 1600,
+            "children": [
+              {
+                "name": "output",
+                "tokens": 64,
+                "micros": 1600,
+                "cache_class": "output",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "User messages",
+            "tokens": 8,
+            "micros": 40,
+            "children": [
+              {
+                "name": "fresh",
+                "tokens": 8,
+                "micros": 40,
+                "cache_class": "fresh",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

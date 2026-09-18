@@ -1,0 +1,57 @@
+event: message_start
+data: {"type": "message_start", "message": {"model": "claude-opus-4-8", "id": "msg_bdrk_6pivenytqmjoz4k3d4ztkznqbywepurwuf4kxhoy2rneo5k6tltq", "type": "message", "role": "assistant", "content": [], "stop_reason": null, "stop_sequence": null, "stop_details": null, "usage": {"input_tokens": 13, "cache_creation_input_tokens": 3204, "cache_read_input_tokens": 0, "cache_creation": {"ephemeral_5m_input_tokens": 3204, "ephemeral_1h_input_tokens": 0}, "output_tokens": 1, "service_tier": "standard"}}}
+
+event: content_block_start
+data: {"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": ""}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": "It"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " looks like we"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " don"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": "'t have any"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " previous conversation history"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " to continue from \u2014 this appears"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " to be the start of our session."}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": "\n\nCould you let me know what"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " you'd like help with? For"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " example:"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": "\n\n- A"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " task or question you were"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " working on\n- A"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " document,"}}
+
+event: content_block_stop
+data: {"type": "content_block_stop", "index": 0}
+
+event: message_delta
+data: {"type": "message_delta", "delta": {"stop_reason": "max_tokens", "stop_sequence": null, "stop_details": null}, "usage": {"input_tokens": 13, "cache_creation_input_tokens": 3204, "cache_read_input_tokens": 0, "output_tokens": 64, "output_tokens_details": {"thinking_tokens": 0}, "cache_creation": {"ephemeral_5m_input_tokens": 3204, "ephemeral_1h_input_tokens": 0}}}
+
+event: message_stop
+data: {"type": "message_stop", "usage": {"input_tokens": 13, "output_tokens": 64}}
+

@@ -1,0 +1,11 @@
+{
+  "model": "claude-opus-4-8",
+  "max_tokens": 64,
+  "system": "You summarize meeting notes concisely.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Summarize: we ship v0.1 Friday and defer dashboards."
+    }
+  ]
+}

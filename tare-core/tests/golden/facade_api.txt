@@ -1,0 +1,4 @@
+fn account_from_usage(Provider, &str, &UsageTokens, &PricingTable) -> Option<CostBreakdown>
+struct CostBreakdown { fresh: MicroUsd, cache_write: MicroUsd, cache_read: MicroUsd, output: MicroUsd, total: MicroUsd }
+fn PricingTable::from_json_str(&str) -> Result<PricingTable, String>
+fn MicroUsd::to_dollar_string(&self) -> String

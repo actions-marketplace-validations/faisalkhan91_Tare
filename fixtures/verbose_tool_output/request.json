@@ -1,0 +1,51 @@
+{
+  "model": "claude-opus-4-8",
+  "max_tokens": 64,
+  "system": "You analyze logs and answer briefly.",
+  "tools": [
+    {
+      "name": "fetch_logs",
+      "description": "Fetch recent logs.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "service"
+        ]
+      }
+    }
+  ],
+  "messages": [
+    {
+      "role": "user",
+      "content": "Did payments error in the last hour?"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_h_1",
+          "name": "fetch_logs",
+          "input": {
+            "service": "payments"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_h_1",
+          "content": "2026-06-25T10:00:00Z INFO payments req=0 status=200 route=/charge\n2026-06-25T10:00:01Z INFO payments req=1 status=200 route=/charge\n2026-06-25T10:00:02Z INFO payments req=2 status=200 route=/charge\n2026-06-25T10:00:03Z INFO payments req=3 status=200 route=/charge\n2026-06-25T10:00:04Z INFO payments req=4 status=200 route=/charge\n2026-06-25T10:00:05Z INFO payments req=5 status=200 route=/charge\n2026-06-25T10:00:06Z INFO payments req=6 status=200 route=/charge\n2026-06-25T10:00:07Z ERROR payments req=7 status=500 route=/charge\n2026-06-25T10:00:08Z INFO payments req=8 status=200 route=/charge\n2026-06-25T10:00:09Z INFO payments req=9 status=200 route=/charge\n2026-06-25T10:00:10Z INFO payments req=10 status=200 route=/charge\n2026-06-25T10:00:11Z INFO payments req=11 status=200 route=/charge\n2026-06-25T10:00:12Z INFO payments req=12 status=200 route=/charge\n2026-06-25T10:00:13Z INFO payments req=13 status=200 route=/charge\n2026-06-25T10:00:14Z INFO payments req=14 status=200 route=/charge\n2026-06-25T10:00:15Z INFO payments req=15 status=200 route=/charge\n2026-06-25T10:00:16Z INFO payments req=16 status=200 route=/charge\n2026-06-25T10:00:17Z INFO payments req=17 status=200 route=/charge\n2026-06-25T10:00:18Z INFO payments req=18 status=200 route=/charge\n2026-06-25T10:00:19Z INFO payments req=19 status=200 route=/charge\n2026-06-25T10:00:20Z INFO payments req=20 status=200 route=/charge\n2026-06-25T10:00:21Z INFO payments req=21 status=200 route=/charge\n2026-06-25T10:00:22Z INFO payments req=22 status=200 route=/charge\n2026-06-25T10:00:23Z INFO payments req=23 status=200 route=/charge\n2026-06-25T10:00:24Z INFO payments req=24 status=200 route=/charge\n2026-06-25T10:00:25Z ERROR payments req=25 status=500 route=/charge\n2026-06-25T10:00:26Z INFO payments req=26 status=200 route=/charge\n2026-06-25T10:00:27Z INFO payments req=27 status=200 route=/charge\n2026-06-25T10:00:28Z INFO payments req=28 status=200 route=/charge\n2026-06-25T10:00:29Z INFO payments req=29 status=200 route=/charge\n2026-06-25T10:00:30Z INFO payments req=30 status=200 route=/charge\n2026-06-25T10:00:31Z INFO payments req=31 status=200 route=/charge\n2026-06-25T10:00:32Z INFO payments req=32 status=200 route=/charge\n2026-06-25T10:00:33Z INFO payments req=33 status=200 route=/charge\n2026-06-25T10:00:34Z INFO payments req=34 status=200 route=/charge\n2026-06-25T10:00:35Z INFO payments req=35 status=200 route=/charge\n2026-06-25T10:00:36Z INFO payments req=36 status=200 route=/charge\n2026-06-25T10:00:37Z INFO payments req=37 status=200 route=/charge\n2026-06-25T10:00:38Z INFO payments req=38 status=200 route=/charge\n2026-06-25T10:00:39Z INFO payments req=39 status=200 route=/charge\n2026-06-25T10:00:40Z INFO payments req=40 status=200 route=/charge\n2026-06-25T10:00:41Z INFO payments req=41 status=200 route=/charge\n2026-06-25T10:00:42Z INFO payments req=42 status=200 route=/charge\n2026-06-25T10:00:43Z INFO payments req=43 status=200 route=/charge\n2026-06-25T10:00:44Z INFO payments req=44 status=200 route=/charge\n2026-06-25T10:00:45Z INFO payments req=45 status=200 route=/charge\n2026-06-25T10:00:46Z INFO payments req=46 status=200 route=/charge\n2026-06-25T10:00:47Z INFO payments req=47 status=200 route=/charge\n2026-06-25T10:00:48Z INFO payments req=48 status=200 route=/charge\n2026-06-25T10:00:49Z INFO payments req=49 status=200 route=/charge\n2026-06-25T10:00:50Z INFO payments req=50 status=200 route=/charge\n2026-06-25T10:00:51Z INFO payments req=51 status=200 route=/charge\n2026-06-25T10:00:52Z INFO payments req=52 status=200 route=/charge\n2026-06-25T10:00:53Z INFO payments req=53 status=200 route=/charge\n2026-06-25T10:00:54Z INFO payments req=54 status=200 route=/charge\n2026-06-25T10:00:55Z INFO payments req=55 status=200 route=/charge\n2026-06-25T10:00:56Z INFO payments req=56 status=200 route=/charge\n2026-06-25T10:00:57Z INFO payments req=57 status=200 route=/charge\n2026-06-25T10:00:58Z INFO payments req=58 status=200 route=/charge\n2026-06-25T10:00:59Z INFO payments req=59 status=200 route=/charge"
+        }
+      ]
+    }
+  ]
+}

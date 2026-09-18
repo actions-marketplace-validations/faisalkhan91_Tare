@@ -1,0 +1,22 @@
+{
+  "name": "tare-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tare's framework-free browser and Tauri workbench UI.",
+  "scripts": {
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json && mkdir -p dist/ui dist/assets && cp src/ui/*.css dist/ui/ && cp -R assets/. dist/assets/ && cp index.html dist/index.html"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^20.19.43",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.4.3",
+    "vitest": "^4.1.11"
+  }
+}

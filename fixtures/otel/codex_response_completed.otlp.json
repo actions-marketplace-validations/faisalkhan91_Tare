@@ -1,0 +1,55 @@
+{
+  "resourceLogs": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "service.name", "value": { "stringValue": "codex" } }
+        ]
+      },
+      "scopeLogs": [
+        {
+          "scope": { "name": "codex.otel" },
+          "logRecords": [
+            {
+              "timeUnixNano": "1782700000000000000",
+              "body": { "stringValue": "sse_event" },
+              "attributes": [
+                { "key": "event.name", "value": { "stringValue": "codex.sse_event" } },
+                { "key": "event.kind", "value": { "stringValue": "response.completed" } },
+                { "key": "model", "value": { "stringValue": "gpt-5-mini" } },
+                { "key": "conversation.id", "value": { "stringValue": "conv-golden" } },
+                { "key": "input_token_count", "value": { "intValue": 5200 } },
+                { "key": "cached_token_count", "value": { "intValue": 1800 } },
+                { "key": "output_token_count", "value": { "intValue": 640 } },
+                { "key": "reasoning_token_count", "value": { "intValue": 410 } },
+                { "key": "event.sequence", "value": { "intValue": 1 } }
+              ]
+            },
+            {
+              "timeUnixNano": "1782700001000000000",
+              "body": { "stringValue": "sse_event" },
+              "attributes": [
+                { "key": "event.name", "value": { "stringValue": "codex.sse_event" } },
+                { "key": "event.kind", "value": { "stringValue": "response.completed" } },
+                { "key": "model", "value": { "stringValue": "gpt-5-mini" } },
+                { "key": "conversation.id", "value": { "stringValue": "conv-golden" } },
+                { "key": "input_token_count", "value": { "intValue": 900 } },
+                { "key": "output_token_count", "value": { "intValue": 120 } },
+                { "key": "event.sequence", "value": { "intValue": 2 } }
+              ]
+            },
+            {
+              "timeUnixNano": "1782700002000000000",
+              "body": { "stringValue": "sse_event" },
+              "attributes": [
+                { "key": "event.name", "value": { "stringValue": "codex.sse_event" } },
+                { "key": "event.kind", "value": { "stringValue": "response.created" } },
+                { "key": "model", "value": { "stringValue": "gpt-5-mini" } }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

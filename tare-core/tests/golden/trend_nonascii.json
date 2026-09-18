@@ -1,0 +1,29 @@
+{
+  "dimension": "by_model",
+  "from": "2026-06-20",
+  "to": "2026-06-21",
+  "days": [
+    "2026-06-20",
+    "2026-06-21"
+  ],
+  "series": [
+    {
+      "key": "café-modèle",
+      "per_day": [
+        1500,
+        0
+      ],
+      "total_micros": 1500
+    },
+    {
+      "key": "日本語モデル",
+      "per_day": [
+        0,
+        900
+      ],
+      "total_micros": 900
+    }
+  ],
+  "pricing_version": "fixture-2026.06",
+  "estimated": true
+}

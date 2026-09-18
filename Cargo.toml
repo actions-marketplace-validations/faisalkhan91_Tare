@@ -1,0 +1,49 @@
+[workspace]
+resolver = "2"
+members = [
+    "tare-core",
+    "tare-store",
+    "tare-proxy",
+    "tare-cli",
+    "tare-mcp",
+    "tare-daemon",
+    "tare-tauri",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.80"
+
+[workspace.dependencies]
+tare-core = { path = "tare-core" }
+tare-store = { path = "tare-store" }
+tare-proxy = { path = "tare-proxy" }
+tare-daemon = { path = "tare-daemon" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Build-speed profiles. Native GUI builds produce many artifacts, so these profiles reduce debug
+# output and preserve incremental reuse. See docs/BUILD_PERF.md.
+[profile.dev]
+# Keep backtraces useful (line numbers) without emitting full DWARF. Use `dev-fast` below to omit it.
+debug = "line-tables-only"
+# Faster incremental links on macOS (debuginfo stays in the .o files, not copied into the binary).
+split-debuginfo = "unpacked"
+
+# Compile build scripts + proc-macros (tauri's are heavy) optimized — they run during every build,
+# so paying opt-level 3 once makes the whole tree build faster.
+[profile.dev.build-override]
+opt-level = 3
+
+# `--profile dev-fast`: the fastest desktop-iteration profile, with no debug information. Use it
+# while checking behavior rather than debugging with lldb:
+#   cargo run -p tare-tauri --features gui --profile dev-fast
+[profile.dev-fast]
+inherits = "dev"
+debug = 0
+strip = "debuginfo"
+
+[profile.dev-fast.build-override]
+opt-level = 3

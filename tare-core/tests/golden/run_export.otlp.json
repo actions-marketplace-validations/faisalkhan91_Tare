@@ -1,0 +1,316 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "tare"
+            }
+          },
+          {
+            "key": "tare.version",
+            "value": {
+              "stringValue": "test-version"
+            }
+          },
+          {
+            "key": "tare.pricing_version",
+            "value": {
+              "stringValue": "fixture-2026.06"
+            }
+          },
+          {
+            "key": "tare.effective_date",
+            "value": {
+              "stringValue": "2026-06-01"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "tare",
+            "version": "test-version"
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "anthropic"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "claude-opus-4-8"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "claude-opus-4-8"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "44"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "53"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_creation.input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.usage.cache_creation_1h.input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_read.input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.reasoning.output_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.usage.audio_input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.usage.audio_output_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.run_id",
+                  "value": {
+                    "stringValue": "11112222333344445555666677778888"
+                  }
+                },
+                {
+                  "key": "tare.top_cause",
+                  "value": {
+                    "stringValue": "coarse-attribution"
+                  }
+                },
+                {
+                  "key": "tare.cost.unpriced",
+                  "value": {
+                    "boolValue": false
+                  }
+                },
+                {
+                  "key": "tare.cost.pricing_version",
+                  "value": {
+                    "stringValue": "fixture-2026.06"
+                  }
+                },
+                {
+                  "key": "tare.cost.effective_date",
+                  "value": {
+                    "stringValue": "2026-06-01"
+                  }
+                },
+                {
+                  "key": "tare.cost.currency",
+                  "value": {
+                    "stringValue": "USD"
+                  }
+                },
+                {
+                  "key": "tare.estimated",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "tare.cost.micro_usd",
+                  "value": {
+                    "intValue": "1545"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.finish_reasons",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "end_turn"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "endTimeUnixNano": "2000000000",
+              "kind": 3,
+              "name": "gen_ai.anthropic",
+              "spanId": "2f01abb94da194d4",
+              "startTimeUnixNano": "1000000000",
+              "traceId": "7b2a7008fca269e5f9e3d434d7b73d26"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-5-mini"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "gpt-5-mini"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "17"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "11"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_creation.input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.usage.cache_creation_1h.input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_read.input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.reasoning.output_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.usage.audio_input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.usage.audio_output_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "tare.run_id",
+                  "value": {
+                    "stringValue": "11112222333344445555666677778888"
+                  }
+                },
+                {
+                  "key": "tare.top_cause",
+                  "value": {
+                    "stringValue": "coarse-attribution"
+                  }
+                },
+                {
+                  "key": "tare.cost.unpriced",
+                  "value": {
+                    "boolValue": false
+                  }
+                },
+                {
+                  "key": "tare.cost.pricing_version",
+                  "value": {
+                    "stringValue": "fixture-2026.06"
+                  }
+                },
+                {
+                  "key": "tare.cost.effective_date",
+                  "value": {
+                    "stringValue": "2026-06-01"
+                  }
+                },
+                {
+                  "key": "tare.cost.currency",
+                  "value": {
+                    "stringValue": "USD"
+                  }
+                },
+                {
+                  "key": "tare.estimated",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "tare.cost.micro_usd",
+                  "value": {
+                    "intValue": "26"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.finish_reasons",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "stop"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "endTimeUnixNano": "3000000000",
+              "kind": 3,
+              "name": "gen_ai.openai",
+              "spanId": "2f01aeb94da199ed",
+              "startTimeUnixNano": "2000000000",
+              "traceId": "7b2a7008fca269e5f9e3d434d7b73d26"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "pricing_version": "fixture-2026.06",
+  "effective_date": "2026-06-01",
+  "estimated": true,
+  "total_micros": 118583,
+  "rows": [
+    {
+      "cause": "bloated-system-prompt",
+      "detail": "Identical large system prompt re-sent uncached across steps; cache the stable prefix.",
+      "tokens": 6482,
+      "micros": 32410,
+      "projected_saved_micros": 29169
+    },
+    {
+      "cause": "cache-read-vs-write",
+      "detail": "Cache writes never read back; the write premium was paid for nothing.",
+      "tokens": 3204,
+      "micros": 4005,
+      "projected_saved_micros": 4005
+    },
+    {
+      "cause": "verbose-tool-output",
+      "detail": "Tool-result payloads dominate input tokens; trim or summarize them.",
+      "tokens": 624,
+      "micros": 3120,
+      "projected_saved_micros": 3120
+    },
+    {
+      "cause": "retry-loop",
+      "detail": "2 identical request(s) re-issued (0 after a failed/declined response); re-issues after success may be intentional (best-of-N).",
+      "tokens": 314,
+      "micros": 574,
+      "projected_saved_micros": 574
+    }
+  ]
+}

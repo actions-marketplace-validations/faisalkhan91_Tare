@@ -1,0 +1,113 @@
+# FROZEN fixture pricing — drives all snapshot/golden tests.
+# Decoupled from shipped pricing.json so updating real prices never breaks goldens.
+# Rates are integer micro-USD per million tokens (1 USD = 1_000_000 micro-USD).
+# Cache identities encoded as three input rates: read 0.1x, write-5m 1.25x, write-1h 2x.
+version = "fixture-2026.06"
+effective_date = "2026-06-01"
+
+[[model]]
+provider = "anthropic"
+model_id = "claude-opus-4-8"
+tier = "standard"
+input_micro_per_mtok = 5000000
+output_micro_per_mtok = 25000000
+cache_read_micro_per_mtok = 500000
+cache_write_5m_micro_per_mtok = 6250000
+cache_write_1h_micro_per_mtok = 10000000
+
+[[model]]
+provider = "anthropic"
+model_id = "claude-sonnet-4-6"
+tier = "standard"
+input_micro_per_mtok = 3000000
+output_micro_per_mtok = 15000000
+cache_read_micro_per_mtok = 300000
+cache_write_5m_micro_per_mtok = 3750000
+cache_write_1h_micro_per_mtok = 6000000
+
+[[model]]
+provider = "anthropic"
+model_id = "claude-haiku-4-5"
+tier = "standard"
+input_micro_per_mtok = 1000000
+output_micro_per_mtok = 5000000
+cache_read_micro_per_mtok = 100000
+cache_write_5m_micro_per_mtok = 1250000
+cache_write_1h_micro_per_mtok = 2000000
+
+# OpenAI rates are representative (no public cache TTL split); cache_read = 0.5x input,
+# cache_write tiers = 1x input (OpenAI has no write premium). Used only to compute goldens.
+[[model]]
+provider = "openai"
+model_id = "gpt-5-mini"
+tier = "standard"
+input_micro_per_mtok = 250000
+output_micro_per_mtok = 2000000
+cache_read_micro_per_mtok = 125000
+cache_write_5m_micro_per_mtok = 250000
+cache_write_1h_micro_per_mtok = 250000
+
+[[model]]
+provider = "openai"
+model_id = "gpt-5"
+tier = "standard"
+input_micro_per_mtok = 1250000
+output_micro_per_mtok = 10000000
+cache_read_micro_per_mtok = 625000
+cache_write_5m_micro_per_mtok = 1250000
+cache_write_1h_micro_per_mtok = 1250000
+
+# Azure OpenAI twins (same wire format, same representative rates as the OpenAI rows).
+[[model]]
+provider = "azure_openai"
+model_id = "gpt-5-mini"
+tier = "standard"
+input_micro_per_mtok = 250000
+output_micro_per_mtok = 2000000
+cache_read_micro_per_mtok = 125000
+cache_write_5m_micro_per_mtok = 250000
+cache_write_1h_micro_per_mtok = 250000
+
+# Bedrock Converse (gateway-exposed ids; representative rates).
+[[model]]
+provider = "bedrock_converse"
+model_id = "amazon.nova-lite-v1:0"
+tier = "standard"
+input_micro_per_mtok = 60000
+output_micro_per_mtok = 240000
+cache_read_micro_per_mtok = 15000
+cache_write_5m_micro_per_mtok = 60000
+cache_write_1h_micro_per_mtok = 60000
+
+# Gemini (no per-request cache-write tier).
+[[model]]
+provider = "gemini"
+model_id = "gemini-2.5-flash"
+tier = "standard"
+input_micro_per_mtok = 300000
+output_micro_per_mtok = 2500000
+cache_read_micro_per_mtok = 75000
+cache_write_5m_micro_per_mtok = 0
+cache_write_1h_micro_per_mtok = 0
+
+# OpenAI-compatible vendors: the row's `provider` field is the vendor label, so the
+# same model name prices differently per vendor (the pricing key is vendor+model, not "openai").
+[[model]]
+provider = "groq"
+model_id = "llama-3.1-70b"
+tier = "standard"
+input_micro_per_mtok = 590000
+output_micro_per_mtok = 790000
+cache_read_micro_per_mtok = 0
+cache_write_5m_micro_per_mtok = 0
+cache_write_1h_micro_per_mtok = 0
+
+[[model]]
+provider = "together"
+model_id = "llama-3.1-70b"
+tier = "standard"
+input_micro_per_mtok = 880000
+output_micro_per_mtok = 880000
+cache_read_micro_per_mtok = 0
+cache_write_5m_micro_per_mtok = 0
+cache_write_1h_micro_per_mtok = 0

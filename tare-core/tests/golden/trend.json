@@ -1,0 +1,35 @@
+{
+  "dimension": "by_provider",
+  "from": "2026-06-20",
+  "to": "2026-06-23",
+  "days": [
+    "2026-06-20",
+    "2026-06-21",
+    "2026-06-22",
+    "2026-06-23"
+  ],
+  "series": [
+    {
+      "key": "anthropic",
+      "per_day": [
+        0,
+        0,
+        53545,
+        0
+      ],
+      "total_micros": 53545
+    },
+    {
+      "key": "openai",
+      "per_day": [
+        26,
+        0,
+        733,
+        0
+      ],
+      "total_micros": 759
+    }
+  ],
+  "pricing_version": "fixture-2026.06",
+  "estimated": true
+}

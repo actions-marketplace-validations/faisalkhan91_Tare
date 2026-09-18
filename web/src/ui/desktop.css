@@ -1,0 +1,197 @@
+/* Desktop-only layer (loaded by index.tauri.html, never the browser). Removes web-isms so the
+   Tauri webview reads as a native app, and reserves space for the macOS traffic lights behind a
+   unified, draggable title band. */
+
+/* Body base stays 13px on the desktop shell: matches the macOS HIG 13pt and the density
+   was reviewed for the Tauri WebView. The browser target uses 14px (tokens.css) per the web-body
+   convention; this override keeps the native app byte-identical to before that change. */
+:root {
+  --fs-md: 13px;
+}
+
+/* App chrome is furniture — no text selection — but the content
+   pane stays selectable so figures, run ids, labels and diagnostics copy cleanly. The old app-wide
+   `* { user-select: none }` made data uncopyable, which reads as broken especially on Windows/Linux
+   where selecting text is expected. */
+.brand,
+.sidebar,
+.topbar,
+.statusbar {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* Cursor: macOS uses the arrow even over links/buttons (HIG), so default the cursor there; Windows and
+   Linux keep the web-standard cursors (pointer on links), which reads as native on those platforms.
+   Editable fields always show the I-beam. */
+[data-os="macos"] * {
+  cursor: default;
+}
+/* Editable fields always show the I-beam. The [data-os="macos"] variants are required: a bare
+   `input` (0,0,1) loses to `[data-os="macos"] *` (0,1,0), so the macOS arrow-default would otherwise
+   win on form fields — the OS-scoped selectors (0,1,1) take it back. */
+input,
+textarea,
+[contenteditable],
+[data-os="macos"] input,
+[data-os="macos"] textarea,
+[data-os="macos"] [contenteditable] {
+  cursor: text;
+}
+
+/* No rubber-band overscroll; the shell scrolls inner panes, not the body. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
+/* The global keyboard focus ring now lives in app.css so BOTH the desktop and
+   the browser viewer get it — it used to be desktop-only, leaving the browser with no focus ring. */
+
+/* Thin, quiet, macOS-overlay-style scrollbars instead of chunky web ones. The thumb is
+   an inset pill — a 2px transparent border with padding-box clip makes it read as a floating overlay
+   bar rather than a full-width gutter — and darkens on hover. The track is invisible. scrollbar-width
+   / scrollbar-color cover Firefox and GTK (Linux) where the ::-webkit- pseudo-elements don't apply.
+   (Cursor is native-correct per OS: `[data-os="macos"] * { cursor: default }` gives macOS its
+   arrow-on-buttons convention, while Windows/Linux keep the web-standard pointer on links.) */
+/* macOS ONLY: Windows and Linux keep their NATIVE scrollbars and respect
+   the OS "always show scrollbars" setting — the overlay style is not imposed globally. Scoped to
+   [data-os="macos"] (set on <html> by the shell init / applyOsClass). */
+[data-os="macos"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+[data-os="macos"] ::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+[data-os="macos"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: padding-box;
+}
+[data-os="macos"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-os="macos"] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Inactive window: quiet the chrome when the window loses focus — a native
+   cue. Data-only (no data-semantic change): the brand + rail dim slightly; the canvas stays legible.
+   `data-inactive` is toggled by wireWindowActive (bootTauri) off the Tauri window focus event. */
+[data-inactive] .brand,
+[data-inactive] .sidebar,
+[data-inactive] .statusbar {
+  opacity: 0.72;
+}
+
+/* macOS traffic-light reserve: the top-left space the native window controls occupy.
+   Single-sourced as a token so it's lintable, and applied with logical `padding-inline-start` so it
+   stays correct under RTL. A CI lint (desktopReserve.test.ts) guards that no later rule shrinks it. */
+:root {
+  /* Clears the macOS traffic lights (~70px) with a comfortable gap so the amber brand dot no longer
+     abuts the green light and reads as a 4th control (was 80px = only ~10px gap). */
+  --traffic-light-reserve: 96px;
+}
+/* Draggable title band — macOS ONLY. On macOS the web IS the title-bar area
+   (titleBarStyle:Overlay, traffic lights overlaid), so the band drags the window. Windows/Linux use
+   PLAIN native decorations: the OS draws its own title bar ABOVE the web content (chrome decision #1),
+   so tare's band there is an ordinary toolbar — NOT a drag region, and it reserves NO caption space
+   the separate native bar already owns (this removes the old Overlay-era trailing caption reserve +
+   the Win/Linux insets, which wasted ~138px and made the band drag under a native bar).
+   UNVALIDATED[win][linux]: the Windows/Linux result needs real-hardware validation. */
+[data-os="macos"] .brand,
+[data-os="macos"] .topbar {
+  -webkit-app-region: drag;
+}
+/* Base wordmark inset so the brand never jams the window's left edge. macOS overrides it with the
+   traffic-light reserve (its controls sit top-left); Windows/Linux keep just this inset because their
+   caption buttons live in the separate native title bar, not in tare's toolbar. */
+.brand {
+  padding-inline-start: var(--s-4);
+}
+[data-os="macos"] .brand {
+  padding-inline-start: var(--traffic-light-reserve);
+}
+/* At 900–1279px the 60px icon rail sits mostly beneath the macOS traffic lights. Do not squeeze or
+   paint a clipped wordmark into that column: leave the brand cell to the native controls and move
+   the toolbar's first real content beyond their measured reserve. In fullscreen the controls hide,
+   so the calibration mark and ordinary toolbar inset return. */
+[data-os="macos"] .shell[data-layout="rail-icons"] .brand {
+  padding-inline: 0;
+}
+[data-os="macos"] .shell[data-layout="rail-icons"] .brand-mark {
+  display: none;
+}
+[data-os="macos"] .shell[data-layout="rail-icons"] .topbar {
+  padding-inline-start: calc(var(--traffic-light-reserve) - var(--sidebar-w) + var(--s-3));
+}
+/* In native fullscreen macOS auto-hides the traffic lights, so the 96px reserve becomes dead space —
+   reclaim it. bootTauri toggles data-fullscreen on <html> from the Tauri resize event. */
+[data-os="macos"][data-fullscreen="true"] .brand {
+  padding-inline-start: var(--s-4);
+}
+[data-os="macos"][data-fullscreen="true"] .shell[data-layout="rail-icons"] .brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+[data-os="macos"][data-fullscreen="true"] .shell[data-layout="rail-icons"] .brand-mark {
+  display: inline-block;
+}
+[data-os="macos"][data-fullscreen="true"] .shell[data-layout="rail-icons"] .topbar {
+  padding-inline-start: var(--s-5);
+}
+.brand button,
+.topbar button,
+.topbar a,
+.topbar input,
+.topbar select {
+  -webkit-app-region: no-drag;
+}
+
+/* ---- macOS vibrancy ----
+   Shell-only translucency: the title band + sidebar + status bar go to a partial tint so the window
+   material (UnderWindowBackground, requested via windowEffects in tauri.conf.json) shows through,
+   while the content pane (.main) stays fully opaque for legibility. Gated on data-material="vibrancy",
+   which bootTauri sets ONLY on macOS Tauri without Reduce Transparency; absent it, the app is the
+   mandatory opaque flat render — the flat surfaces are the contrast reference, vibrancy is additive.
+   UNVALIDATED[macos]: config + logic are tested, but the translucent render needs a real macOS app
+   launch to eyeball. */
+html[data-material="vibrancy"],
+html[data-material="vibrancy"] body {
+  background: transparent;
+}
+html[data-material="vibrancy"] .brand,
+html[data-material="vibrancy"] .topbar,
+html[data-material="vibrancy"] .sidebar,
+html[data-material="vibrancy"] .statusbar {
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
+}
+/* Content is never translucent over the desktop wallpaper. */
+html[data-material="vibrancy"] .main {
+  background: var(--bg);
+}
+/* Force-flat completes the guard on the desktop layer: Reduce Transparency re-opaques the
+   shell (the flat render is the contrast reference). Belt-and-suspenders to the bootTauri gate. */
+@media (prefers-reduced-transparency: reduce) {
+  html[data-material="vibrancy"],
+  html[data-material="vibrancy"] body,
+  html[data-material="vibrancy"] .main {
+    background: var(--bg);
+  }
+  html[data-material="vibrancy"] .brand,
+  html[data-material="vibrancy"] .topbar,
+  html[data-material="vibrancy"] .statusbar {
+    background: transparent;
+  }
+  html[data-material="vibrancy"] .sidebar {
+    background: var(--surface);
+  }
+}
+
+img,
+a {
+  -webkit-user-drag: none;
+}

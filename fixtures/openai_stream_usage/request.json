@@ -1,0 +1,13 @@
+{
+  "model": "gpt-5-mini",
+  "stream": true,
+  "stream_options": {
+    "include_usage": true
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Plan a 3-step rollout; think it through, then list the 3 steps."
+    }
+  ]
+}

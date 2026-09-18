@@ -1,0 +1,197 @@
+{
+  "version": "2026.06.01",
+  "effective_date": "2026-06-01",
+  "note": "Estimated rates in integer micro-USD per million tokens. Claude rates verified against the claude-api skill pricing table. OpenAI/Azure OpenAI gpt-5(-mini) and Gemini 2.5 Flash/Pro input, output, and cache-read rates verified against each provider's published pricing docs (2026-09-09); their cache-write rate is unused by design (OpenAI/Gemini caching is implicit, so the wire parser never reports a nonzero cache-write token count) and is set to 0 for clarity, not correctness. Bedrock's Anthropic-passthrough row matches Anthropic's own cache economics (verified); Bedrock Nova Lite and the Groq/Together rows remain representative, unverified. This file is never fetched over the network at runtime.",
+  "models": [
+    {
+      "provider": "anthropic",
+      "model_id": "claude-opus-5",
+      "tier": "standard",
+      "input_micro_per_mtok": 5000000,
+      "output_micro_per_mtok": 25000000,
+      "cache_read_micro_per_mtok": 500000,
+      "cache_write_5m_micro_per_mtok": 6250000,
+      "cache_write_1h_micro_per_mtok": 10000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-opus-4-8",
+      "tier": "standard",
+      "input_micro_per_mtok": 5000000,
+      "output_micro_per_mtok": 25000000,
+      "cache_read_micro_per_mtok": 500000,
+      "cache_write_5m_micro_per_mtok": 6250000,
+      "cache_write_1h_micro_per_mtok": 10000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-opus-4-7",
+      "tier": "standard",
+      "input_micro_per_mtok": 5000000,
+      "output_micro_per_mtok": 25000000,
+      "cache_read_micro_per_mtok": 500000,
+      "cache_write_5m_micro_per_mtok": 6250000,
+      "cache_write_1h_micro_per_mtok": 10000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-opus-4-6",
+      "tier": "standard",
+      "input_micro_per_mtok": 5000000,
+      "output_micro_per_mtok": 25000000,
+      "cache_read_micro_per_mtok": 500000,
+      "cache_write_5m_micro_per_mtok": 6250000,
+      "cache_write_1h_micro_per_mtok": 10000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-fable-5",
+      "tier": "standard",
+      "input_micro_per_mtok": 10000000,
+      "output_micro_per_mtok": 50000000,
+      "cache_read_micro_per_mtok": 1000000,
+      "cache_write_5m_micro_per_mtok": 12500000,
+      "cache_write_1h_micro_per_mtok": 20000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-sonnet-5",
+      "tier": "standard",
+      "input_micro_per_mtok": 2000000,
+      "output_micro_per_mtok": 10000000,
+      "cache_read_micro_per_mtok": 200000,
+      "cache_write_5m_micro_per_mtok": 2500000,
+      "cache_write_1h_micro_per_mtok": 4000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-sonnet-4-6",
+      "tier": "standard",
+      "input_micro_per_mtok": 3000000,
+      "output_micro_per_mtok": 15000000,
+      "cache_read_micro_per_mtok": 300000,
+      "cache_write_5m_micro_per_mtok": 3750000,
+      "cache_write_1h_micro_per_mtok": 6000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-haiku-4-5",
+      "tier": "standard",
+      "input_micro_per_mtok": 1000000,
+      "output_micro_per_mtok": 5000000,
+      "cache_read_micro_per_mtok": 100000,
+      "cache_write_5m_micro_per_mtok": 1250000,
+      "cache_write_1h_micro_per_mtok": 2000000
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-haiku-4-5-20251001",
+      "tier": "standard",
+      "input_micro_per_mtok": 1000000,
+      "output_micro_per_mtok": 5000000,
+      "cache_read_micro_per_mtok": 100000,
+      "cache_write_5m_micro_per_mtok": 1250000,
+      "cache_write_1h_micro_per_mtok": 2000000
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5-mini",
+      "tier": "standard",
+      "input_micro_per_mtok": 250000,
+      "output_micro_per_mtok": 2000000,
+      "cache_read_micro_per_mtok": 25000,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-5",
+      "tier": "standard",
+      "input_micro_per_mtok": 1250000,
+      "output_micro_per_mtok": 10000000,
+      "cache_read_micro_per_mtok": 125000,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    },
+    {
+      "provider": "azure_openai",
+      "model_id": "gpt-5-mini",
+      "tier": "standard",
+      "input_micro_per_mtok": 250000,
+      "output_micro_per_mtok": 2000000,
+      "cache_read_micro_per_mtok": 25000,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    },
+    {
+      "provider": "azure_openai",
+      "model_id": "gpt-5",
+      "tier": "standard",
+      "input_micro_per_mtok": 1250000,
+      "output_micro_per_mtok": 10000000,
+      "cache_read_micro_per_mtok": 125000,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    },
+    {
+      "provider": "bedrock_converse",
+      "model_id": "amazon.nova-lite-v1:0",
+      "tier": "standard",
+      "input_micro_per_mtok": 60000,
+      "output_micro_per_mtok": 240000,
+      "cache_read_micro_per_mtok": 15000,
+      "cache_write_5m_micro_per_mtok": 60000,
+      "cache_write_1h_micro_per_mtok": 60000
+    },
+    {
+      "provider": "bedrock_converse",
+      "model_id": "anthropic.claude-sonnet-4-6",
+      "tier": "standard",
+      "input_micro_per_mtok": 3000000,
+      "output_micro_per_mtok": 15000000,
+      "cache_read_micro_per_mtok": 300000,
+      "cache_write_5m_micro_per_mtok": 3750000,
+      "cache_write_1h_micro_per_mtok": 6000000
+    },
+    {
+      "provider": "gemini",
+      "model_id": "gemini-2.5-flash",
+      "tier": "standard",
+      "input_micro_per_mtok": 300000,
+      "output_micro_per_mtok": 2500000,
+      "cache_read_micro_per_mtok": 30000,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    },
+    {
+      "provider": "gemini",
+      "model_id": "gemini-2.5-pro",
+      "tier": "standard",
+      "input_micro_per_mtok": 1250000,
+      "output_micro_per_mtok": 10000000,
+      "cache_read_micro_per_mtok": 125000,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    },
+    {
+      "provider": "groq",
+      "model_id": "llama-3.3-70b-versatile",
+      "tier": "standard",
+      "input_micro_per_mtok": 590000,
+      "output_micro_per_mtok": 790000,
+      "cache_read_micro_per_mtok": 0,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    },
+    {
+      "provider": "together",
+      "model_id": "llama-3.3-70b-versatile",
+      "tier": "standard",
+      "input_micro_per_mtok": 880000,
+      "output_micro_per_mtok": 880000,
+      "cache_read_micro_per_mtok": 0,
+      "cache_write_5m_micro_per_mtok": 0,
+      "cache_write_1h_micro_per_mtok": 0
+    }
+  ]
+}

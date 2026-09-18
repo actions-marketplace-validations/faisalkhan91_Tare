@@ -1,0 +1,10 @@
+{
+  "model": "gpt-5-mini",
+  "stream": true,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Give me a one-line status."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "model": "claude-opus-4-8",
+  "max_tokens": 2048,
+  "thinking": {
+    "type": "adaptive"
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "A bat and ball cost $1.10; the bat costs $1 more than the ball. Reason step by step, then give the ball's price."
+    }
+  ]
+}

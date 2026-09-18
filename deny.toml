@@ -1,0 +1,33 @@
+# cargo-deny configuration. Run by .github/workflows/ci.yml (cargo deny check) — NOT part of
+# the offline gate (scripts/ci.sh), since the advisory DB requires network access.
+
+[advisories]
+# Fail on any known RUSTSEC advisory in the dependency tree (incl. the Tauri/webview crates).
+yanked = "deny"
+ignore = []
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[licenses]
+# Tare itself is MIT; allow the permissive licenses common in the Rust ecosystem.
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Unicode-3.0",
+  "Unicode-DFS-2016",
+  "Zlib",
+  "MPL-2.0",
+  "CC0-1.0",
+]
+confidence-threshold = 0.9
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

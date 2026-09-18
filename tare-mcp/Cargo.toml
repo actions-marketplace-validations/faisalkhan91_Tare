@@ -1,0 +1,18 @@
+[package]
+name = "tare-mcp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "tare_mcp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tare-mcp"
+path = "src/main.rs"
+
+[dependencies]
+tare-core = { workspace = true }
+tare-store = { workspace = true }
+serde_json = { workspace = true }

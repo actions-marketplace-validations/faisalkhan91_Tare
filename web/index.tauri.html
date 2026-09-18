@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tare</title>
+    <!-- Pre-paint theme: resolves data-theme before the stylesheets paint so the
+         hidden window can be shown without a white/dark flash. On desktop the native
+         initialization_script additionally seeds data-os/material + a ShellInit
+         snapshot before this runs; this page-context script owns the LocalStorage-derived theme. -->
+    <script src="./prepaint.js"></script>
+    <link rel="stylesheet" href="./ui/tokens.css" />
+    <link rel="stylesheet" href="./ui/fonts.css" />
+    <link rel="stylesheet" href="./ui/app.css" />
+    <link rel="stylesheet" href="./ui/shell.css" />
+    <link rel="stylesheet" href="./ui/components.css" />
+    <link rel="stylesheet" href="./ui/workspaces.css" />
+    <!-- Desktop additionally links desktop.css, last so it can override shell chrome. -->
+    <link rel="stylesheet" href="./ui/desktop.css" />
+  </head>
+  <body>
+    <!-- Static semantic startup shell: the hidden window is shown over this
+         framed skeleton (pre-resolved theme, no flash / no empty webview) while data + preferences
+         hydrate; mountApp clears #app and replaces it once ready. -->
+    <div id="app">
+      <div class="shell startup-shell" data-startup-shell aria-busy="true">
+        <div class="brand">Tare</div>
+        <header class="topbar"></header>
+        <nav class="sidebar" aria-hidden="true"></nav>
+        <main class="main"><p class="startup-hint">Loading…</p></main>
+        <footer class="statusbar" aria-label="Workspace status"></footer>
+      </div>
+    </div>
+    <!-- External module (not inline) so it works under a strict CSP. -->
+    <script type="module" src="./bootTauri.js"></script>
+  </body>
+</html>

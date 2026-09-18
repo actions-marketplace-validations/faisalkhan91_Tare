@@ -1,0 +1,630 @@
+/* Reusable cross-workspace component styles: rail commands, Tare Beam, basis band, provenance
+   strip, sheets, and icons. Loaded after app.css/shell.css; role tokens live in tokens.css. */
+
+/* Rail Commands row: the single in-app menu surface, styled like a footer
+   nav item but a <button> (it opens the palette, it's not a route). Chord hint is right-aligned. */
+.nav-commands {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  margin-bottom: 2px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-md);
+  text-align: start;
+  cursor: pointer;
+}
+.nav-commands-icon {
+  flex: none;
+  color: currentColor;
+}
+.nav-commands:hover {
+  background: var(--state-hover);
+  color: var(--text);
+}
+.nav-commands-hint {
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+/* ---- Tare Beam ------------------------------------------------------------
+   One strict-unit lane (the track) + a ranked text outline that is the accessible source of truth.
+   Meaning survives with no color: each segment carries a pattern AND the outline states label · value
+   · share; forced-colors drops fills for borders + labels. */
+.tare-beam {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.tare-beam-heading {
+  font-family: var(--font-display);
+  font-stretch: 87.5%;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  margin: 0;
+}
+.tare-beam-track {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.tare-beam-seg {
+  height: 100%;
+  min-width: 2px;
+  background-color: var(--data-ink); /* tone class overrides; color is SECONDARY to pattern+label */
+  /* 120–180ms width settle after an explicit scope/selection change; no continuous motion. */
+  transition: width 150ms ease;
+}
+/* Zero-centered compare lane: segments diverge left (cheaper) / right (costlier) from a center rule. */
+.tare-beam-track--centered {
+  position: relative;
+  justify-content: center;
+}
+.tare-beam-track--centered .beam-cheaper {
+  order: 1;
+}
+.tare-beam-track--centered .beam-costlier {
+  order: 3;
+}
+.tare-beam-center {
+  order: 2;
+  width: 2px;
+  background: var(--border-strong);
+  z-index: 1;
+}
+
+/* Non-color encoding: distinct repeating patterns layered over the tone fill, so segments stay
+   distinguishable in grayscale and when a tone repeats. currentColor-neutral overlays. */
+.beam-pattern-0 {
+  background-image: none;
+}
+.beam-pattern-1 {
+  background-image: repeating-linear-gradient(45deg, transparent 0 3px, rgb(0 0 0 / 0.28) 3px 6px);
+}
+.beam-pattern-2 {
+  background-image: repeating-linear-gradient(-45deg, transparent 0 3px, rgb(0 0 0 / 0.28) 3px 6px);
+}
+.beam-pattern-3 {
+  background-image: repeating-linear-gradient(90deg, transparent 0 3px, rgb(0 0 0 / 0.28) 3px 6px);
+}
+.beam-pattern-4 {
+  background-image: radial-gradient(rgb(0 0 0 / 0.32) 1.2px, transparent 1.3px);
+  background-size: 6px 6px;
+}
+.beam-pattern-5 {
+  background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 0.28) 3px 6px);
+}
+
+.tare-beam-outline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tare-beam-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: 2px var(--s-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+button.tare-beam-row {
+  cursor: pointer;
+}
+button.tare-beam-row:hover {
+  background: var(--state-hover);
+}
+button.tare-beam-row:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.tare-beam-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background-color: var(--data-ink);
+  border: 1px solid var(--border-strong);
+}
+.tare-beam-measured {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+/* Detached unpriced/unknown marker: visually separated from the lane (dashed rule above), tokens only,
+   never a fabricated dollar segment. */
+.tare-beam-gap {
+  margin: 0;
+  padding-top: var(--s-1);
+  border-top: 1px dashed var(--border-strong);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.tare-beam-gap-mark {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 3px;
+}
+
+/* Reduced motion: no width animation. */
+@media (prefers-reduced-motion: reduce) {
+  .tare-beam-seg {
+    transition: none;
+  }
+}
+/* Forced-colors / high contrast: drop pattern fills, give every segment + swatch a structural border
+   and let the outline labels carry the meaning. */
+@media (forced-colors: active), (prefers-contrast: more) {
+  .tare-beam-seg {
+    background-image: none;
+    border-right: 1px solid CanvasText;
+  }
+  .tare-beam-swatch,
+  .tare-beam-gap-mark {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ---- Utility sheet + Settings ------------------------------- */
+.utility-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  background: var(--scrim);
+}
+.utility-sheet-backdrop[data-motion-state="closing"] {
+  pointer-events: none;
+}
+.utility-sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(760px, calc(100vw - var(--s-6)));
+  height: 100%;
+  min-width: 0;
+  border-left: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(0);
+  transition: transform var(--dur-panel-exit) var(--ease-exit);
+}
+.utility-sheet-backdrop[data-motion-state="opening"] .utility-sheet,
+.utility-sheet-backdrop[data-motion-state="closing"] .utility-sheet {
+  transform: translateX(24px);
+}
+.utility-sheet-backdrop[data-motion-state="open"] .utility-sheet {
+  transition-duration: var(--dur-panel-enter);
+  transition-timing-function: var(--ease-standard);
+}
+.utility-sheet:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.utility-sheet-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: 52px;
+  padding: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.utility-sheet-header h1 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  line-height: 1.2;
+}
+.utility-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--s-5);
+}
+.settings-origin {
+  margin: calc(-1 * var(--s-2)) 0 var(--s-3);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.settings-nav-shell {
+  position: sticky;
+  top: calc(-1 * var(--s-5));
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-1);
+  margin: calc(-1 * var(--s-5)) calc(-1 * var(--s-5)) var(--s-4);
+  padding-inline: var(--s-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.settings-nav-shell[data-overflow="true"] {
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+}
+.settings-nav {
+  display: flex;
+  gap: 0;
+  min-width: 0;
+  padding-block: var(--s-3) 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+.settings-nav-scroll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.settings-nav-shell:not([data-overflow="true"]) .settings-nav-scroll {
+  display: none;
+}
+.settings-nav-shell[data-overflow="true"] .settings-nav-scroll[hidden] {
+  display: inline-flex;
+  visibility: hidden;
+  pointer-events: none;
+}
+.settings-nav-scroll-back .icon {
+  transform: rotate(180deg);
+}
+.settings-nav-scroll:hover {
+  background: var(--state-hover);
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-nav {
+    scroll-behavior: auto;
+  }
+}
+.settings-nav-button {
+  position: relative;
+  flex: none;
+  min-height: 36px;
+  padding: var(--s-2) 6px;
+  border: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.settings-nav-button::after {
+  content: "";
+  position: absolute;
+  inset-inline: 6px;
+  inset-block-end: -1px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  transition: background-color var(--dur-1) var(--ease-standard);
+}
+.settings-nav-button:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.settings-nav-button:not([aria-current="location"]):hover::after {
+  background: var(--border-strong);
+}
+.settings-nav-button[aria-current="location"] {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+}
+.settings-nav-button[aria-current="location"]::after {
+  background: var(--brass);
+}
+.settings-section {
+  scroll-margin-top: calc(36px + var(--s-6));
+}
+.settings-section .field {
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) minmax(220px, auto);
+  gap: var(--s-1) var(--s-4);
+  max-width: none;
+}
+.settings-section .field > input,
+.settings-section .field > select,
+.settings-section .field > button {
+  grid-column: 2;
+  grid-row: 1;
+}
+.settings-section .field > input[type="checkbox"] {
+  min-width: 0;
+  justify-self: start;
+}
+.settings-section .field-origin {
+  grid-column: 2;
+  grid-row: 2;
+  margin-left: 0;
+}
+.settings-subsection {
+  margin-top: var(--s-4);
+  padding-top: var(--s-1);
+  border-top: 1px solid var(--border);
+}
+.settings-shortcuts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 var(--s-4);
+  margin: 0;
+}
+.settings-shortcuts dt,
+.settings-shortcuts dd {
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-shortcuts dt {
+  color: var(--muted);
+}
+.settings-shortcuts dd {
+  margin: 0;
+  text-align: end;
+}
+.settings-shortcuts kbd {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.saved-investigation-list {
+  display: flex;
+  flex-direction: column;
+}
+.saved-investigation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.saved-investigation-summary {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.saved-investigation-summary .field-origin {
+  margin-left: 0;
+}
+
+/* Trust & Pricing stays a focused verification surface: two stable destinations, then compact evidence
+   sections. Tables may scroll inside their section at narrow widths instead of widening the sheet. */
+.trust-nav {
+  position: sticky;
+  top: calc(-1 * var(--s-5));
+  z-index: 1;
+  display: flex;
+  gap: 0;
+  margin: calc(-1 * var(--s-5)) calc(-1 * var(--s-5)) var(--s-4);
+  padding: var(--s-3) var(--s-5) 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.trust-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: var(--s-2) 6px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  color: var(--muted);
+  text-decoration: none;
+}
+.trust-nav a::after {
+  content: "";
+  position: absolute;
+  inset-inline: 6px;
+  inset-block-end: -1px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  transition: background-color var(--dur-1) var(--ease-standard);
+}
+.trust-nav a:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.trust-nav a:not([aria-current="page"]):hover::after {
+  background: var(--border-strong);
+}
+.trust-nav a[aria-current="page"] {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+}
+.trust-nav a[aria-current="page"]::after {
+  background: var(--brass);
+}
+@media (forced-colors: active) {
+  .settings-nav-button[aria-current="location"]::after,
+  .trust-nav a[aria-current="page"]::after {
+    background: Highlight;
+  }
+}
+@media (pointer: coarse) {
+  .settings-nav-button,
+  .trust-nav a {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+.utility-sheet-body[data-trust-view] > .section,
+.trust-receipt > .section,
+.trust-pricing-catalog > .section {
+  margin-bottom: var(--s-4);
+}
+.utility-sheet-body[data-trust-view] > .section,
+.trust-receipt > .section {
+  overflow-x: auto;
+}
+.trust-keyline,
+.trust-provenance-line,
+.trust-assumption {
+  margin-block: var(--s-2);
+}
+.trust-source-table,
+.trust-reconciliation-table {
+  margin-top: var(--s-3);
+}
+.trust-reconciliation-table {
+  min-width: 640px;
+}
+
+/* Capture sheet: answer-first status and one recommended path. The diagnostic checklist is
+   structural (glyph + text + data status), while provider-specific setup stays behind <details>. */
+.utility-sheet-body[data-capture-state] > .section {
+  margin-bottom: var(--s-4);
+}
+.capture-headline,
+.capture-keyline {
+  margin-block: var(--s-2);
+}
+.capture-detected {
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--border);
+}
+.capture-recommended-config {
+  max-height: 220px;
+  overflow: auto;
+}
+.capture-start-error[hidden] {
+  display: none;
+}
+.capture-checks:not(:empty) {
+  margin-top: var(--s-3);
+}
+.capture-check-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+.capture-check {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: var(--s-2);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.capture-check-mark {
+  font-weight: 700;
+  text-align: center;
+}
+.capture-check-mark.check-ok {
+  color: var(--cost-ok);
+}
+.capture-check-mark.check-warn {
+  color: var(--cost-warn);
+}
+.capture-check-mark.check-bad {
+  color: var(--cost-high);
+}
+.capture-check-copy {
+  min-width: 0;
+}
+.capture-check-fix {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+}
+.capture-pricing-footnote {
+  padding: var(--s-2) var(--s-3);
+  border-left: 2px solid var(--border-strong);
+}
+.capture-advanced {
+  margin-top: var(--s-4);
+  border-top: 1px solid var(--border-strong);
+}
+.capture-advanced > summary {
+  padding: var(--s-3) 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 600;
+}
+.capture-advanced[open] > summary {
+  color: var(--text);
+}
+.capture-advanced-body {
+  padding-bottom: var(--s-5);
+}
+
+@media (forced-colors: active), (prefers-contrast: more) {
+  .capture-check-mark {
+    color: CanvasText !important;
+  }
+  .capture-pricing-footnote {
+    border-left-color: CanvasText;
+  }
+}
+
+@media (max-width: 560px) {
+  .utility-sheet {
+    width: 100%;
+  }
+  .utility-sheet-body,
+  .utility-sheet-header {
+    padding-inline: var(--s-4);
+  }
+  .trust-nav {
+    top: calc(-1 * var(--s-5));
+    margin-inline: calc(-1 * var(--s-4));
+    padding-inline: var(--s-4);
+  }
+  .settings-nav-shell {
+    margin-inline: calc(-1 * var(--s-4));
+    padding-inline: var(--s-4);
+  }
+  .settings-section .field {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--s-1);
+  }
+}
+
+@media (forced-colors: active), (prefers-contrast: more) {
+  .utility-sheet-backdrop {
+    background: Canvas !important;
+  }
+  .utility-sheet {
+    border-left: 2px solid CanvasText;
+  }
+}

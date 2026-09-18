@@ -1,0 +1,74 @@
+# Offline gate + supply-chain checks. Runs on push/PR. The `gate` job primes lockfile-pinned
+# dependencies and Chromium, then runs the exact offline gate (scripts/ci.sh): no network beyond
+# loopback during verification, no display, no signing. It sets
+# TARE_SKIP_GUI_LINT=1 so the storm-tier `--features gui-test` tauri compile (which needs
+# webkit2gtk, not present on ubuntu-latest) is skipped here — it is verified on macOS / a
+# WebKit-provisioned runner instead (see docs/DESKTOP_TESTING.md).
+# The `msrv` and `deny` jobs enforce things the offline gate intentionally can't (a pinned
+# toolchain floor; the advisory/license DB needs network) — kept as separate jobs.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# Least privilege: CI only builds/tests, so a read-only token is sufficient.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+        with:
+          components: clippy, rustfmt
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+      # A fresh hosted runner has neither Cargo's registry nor Playwright's pinned browser. Prime
+      # both from the committed lockfiles before scripts/ci.sh deliberately switches to --offline.
+      - name: Prime lockfile-pinned Rust dependencies
+        run: cargo fetch --locked
+      - name: Install lockfile-pinned web dependencies and Chromium
+        working-directory: web
+        run: |
+          npm ci
+          ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Offline gate (build, test, clippy, fmt, web typecheck/vitest, hero SVG)
+        # Skip the storm-tier `--features gui-test` tauri compile on ubuntu-latest: it needs webkit2gtk
+        # (not preinstalled), and this gate is intentionally GUI-free. The desktop shell + IPC-seam
+        # round-trip are verified on macOS / a WebKit-provisioned runner (docs/DESKTOP_TESTING.md).
+        run: bash scripts/ci.sh
+        env:
+          TARE_SKIP_GUI_LINT: "1"
+
+  msrv:
+    # Enforce the declared rust-version floor — the offline gate builds on `stable`, so MSRV
+    # drift would otherwise go undetected. If a dependency raises the real floor, this job
+    # fails loudly and the maintainer bumps `rust-version`.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Read declared MSRV
+        id: msrv
+        run: echo "v=$(grep -m1 '^rust-version' Cargo.toml | sed -E 's/.*\"([0-9.]+)\".*/\1/')" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: ${{ steps.msrv.outputs.v }}
+      - name: Build workspace on the MSRV floor (lib targets, default features)
+        run: cargo build --workspace --offline || cargo build --workspace
+
+  deny:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+      - name: cargo-deny (advisories, bans, licenses, sources)
+        uses: EmbarkStudios/cargo-deny-action@8f84122a46a358a27cb0625d85ad60ab436a1b87 # v2
+        with:
+          command: check

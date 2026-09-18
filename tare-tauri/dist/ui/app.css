@@ -1,0 +1,2351 @@
+/* Tare app shell + components. Consumes tokens.css only (no raw colors). Layout is a fixed
+   sidebar + topbar grid; content scrolls. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  /* Scroll ownership: the page itself NEVER scrolls. The .shell is a fixed
+     100vh/100dvh frame; scrolling happens only inside the designated owners (.main, the rail, and
+     intentionally-bounded panes). This guards against a stray overflow scrolling the whole document
+     under the fixed chrome — the classic "content tucked under the header" bug. */
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+
+/* Base link color: any <a> without its own color inherits the warm palette instead
+   of browser-default sRGB blue, which clashed with the app (e.g. session/run-id links). Classed
+   links (.nav-item, .crumb, .btn, .topbar-action…) set their own color and are unaffected. */
+a {
+  color: var(--muted);
+}
+a:hover {
+  color: var(--text);
+}
+
+/* Global keyboard focus ring: keyboard-only (not on mouse click), shared by BOTH
+   the desktop shell and the browser viewer. Previously lived in desktop.css, so the browser viewer
+   had no global focus ring. Component rules may still add their own :focus-visible on top. */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Accessible text for intentionally icon-only or visually compact controls/headers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- density: compact tightens the rhythm for dense data / small windows ---- */
+[data-density="compact"] th,
+[data-density="compact"] td {
+  padding: var(--s-1) var(--s-2);
+}
+[data-density="compact"] .section {
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
+}
+[data-density="compact"] .main {
+  padding: var(--s-4) var(--s-5);
+}
+[data-density="compact"] .cards {
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+[data-density="compact"] .nav-item {
+  padding: var(--s-1) var(--s-3);
+}
+[data-density="compact"] .chip {
+  padding: var(--s-1) var(--s-3);
+}
+[data-density="compact"] .field {
+  padding: var(--s-1) 0;
+}
+
+/* ---- shell grid ---- */
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: var(--topbar-h) 1fr 28px;
+  grid-template-areas:
+    "brand topbar"
+    "nav   main"
+    "status status";
+  height: 100vh;
+}
+
+/* Adaptive workbench layout (.shell[data-layout=…]) moved to shell.css. */
+
+/* High contrast: respect the OS Increase-Contrast / forced-colors
+   setting — shared across browser + desktop. Strengthen structural borders + focus rings for a flat,
+   high-legibility shell; vibrancy is already disabled (data-material=flat, bootTauri). Data semantics
+   are untouched — this only firms up separators/focus. `data-high-contrast` mirrors the media query so
+   scripted contexts (native-injected trait) get the same treatment. The full dual-theme contrast
+   contrast coverage is tracked by. */
+@media (prefers-contrast: more), (forced-colors: active) {
+  :root {
+    --border: var(--border-strong);
+  }
+}
+[data-high-contrast] {
+  --border: var(--border-strong);
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  :focus-visible {
+    outline-width: 2px;
+  }
+}
+
+/* Skip-to-content link (WCAG 2.4.1): visually hidden until focused, then pinned
+   top-left. position:fixed keeps it out of the .shell grid flow so it never shifts layout. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  padding: 8px 14px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+  transition: transform 0.15s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ---- breadcrumb-as-nav-stack (left-aligned in the toolbar lead) ---- */
+.breadcrumb-nav {
+  min-width: 0; /* let the trail truncate rather than shove the trailing cluster */
+  overflow: hidden;
+}
+.breadcrumb {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+.crumb-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  min-width: 0;
+}
+/* CSS-drawn separator (aria-hidden — SRs skip generated content), never a text node. */
+.crumb-item + .crumb-item::before {
+  content: "/";
+  color: var(--muted);
+  opacity: 0.6;
+}
+.crumb {
+  font-size: var(--fs-md);
+  color: var(--muted);
+}
+/* The leaf is the page <h1>; reset heading defaults so it reads as an inline crumb, and let it truncate. */
+.crumb-current {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+a.crumb {
+  text-decoration: none;
+}
+a.crumb:hover {
+  color: var(--text);
+}
+
+/* ---- status bar ---- */
+.statusbar {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-4);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+/* Scoped workspace status styles (.status-scope/.status-warning) moved to shell.css. */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+.status-dot.ok {
+  background: var(--cost-ok);
+}
+/* Capture/connection status in the persistent status bar: dot + concise text as one unit. */
+.conn-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.conn-text {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.status-updated {
+  color: var(--faint);
+}
+
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: 0 var(--s-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  /* Three explicit zones: lead | center | trail. */
+  justify-content: space-between;
+}
+/* Top-bar zones. Lead holds the breadcrumb, optional range control, and contextual action; the empty
+   center flexes to keep the Max-inspect warning at the trailing edge. */
+.topbar-lead,
+.topbar-trail {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.topbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+.topbar-actions:empty {
+  display: none;
+}
+/* Loud, always-visible body-capture indicator — max_inspect stores redacted bodies,
+   so make that explicit app-wide in a warn tone, linking to Settings to review/purge. */
+.capture-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* space the capture dot from its label (icon + text) */
+  min-height: 24px; /* WCAG 2.2 SC 2.5.8 target size */
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--cost-warn);
+  padding: 2px var(--s-2);
+  border: 1px solid color-mix(in srgb, var(--cost-warn) 45%, transparent);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.capture-banner[hidden] {
+  display: none;
+}
+.capture-banner:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+/* Per-screen contextual action: a compact, quiet toolbar affordance — the discoverable home
+   for a screen's primary jump. Subtle by default; the accent shows on hover/focus. */
+.topbar-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px; /* WCAG 2.2 SC 2.5.8 target size */
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  padding: 2px var(--s-2);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.topbar-action:hover {
+  color: var(--accent);
+}
+.topbar-action:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  color: var(--text);
+}
+
+.brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-4);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  /* One continuous top band with the topbar: share the bottom rule, NO vertical seam
+     between brand and topbar. The sidebar's own border-right draws the nav↔main divider below. */
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* Inline SVG icon primitive. Icons draw in currentColor, so they inherit the
+   control's text color and are remapped by forced-colors automatically; this base rule only fixes
+   alignment + sizing so a glyph never shrinks or baseline-drifts inside flex text. */
+.icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: text-bottom;
+}
+/* Under Windows forced-colors / high-contrast, let the OS palette drive icon strokes (currentColor
+   already maps to CanvasText), and never let a background wash hide a hairline glyph. */
+@media (forced-colors: active) {
+  .icon {
+    forced-color-adjust: auto;
+  }
+}
+
+/* Brand calibration mark: the Beam-derived gauge glyph replacing the legacy amber dot. Accent-
+   tinted for identity, but a typographic mark — never a filled circle that could read as a fourth
+   macOS traffic light. */
+.brand .brand-mark {
+  color: var(--accent);
+}
+
+/* Brand wordmark + category tagline. The tagline ("cost profiler for AI agents") anchors the
+   product to the uncontested "profiler" category; it sits to the right of the wordmark, muted
+   and lighter, and is clipped rather than wrapping on a narrow sidebar. */
+.brand .brand-name {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Brand tagline relocated to the sidebar footer: a quiet identity line. */
+.nav-tagline {
+  margin: var(--s-2) 0 0 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.sidebar {
+  grid-area: nav;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  padding: var(--s-3);
+  overflow-y: auto;
+  overflow-x: hidden; /* a vertical rail, never a horizontal route strip */
+  overscroll-behavior: contain; /* The rail owns its own scroll; do not chain to the page. */
+  /* Clamp the 1fr row to its track so the pane scrolls internally (grid items default to a
+     min-content minimum, which would otherwise blow the shell past 100vh). */
+  min-height: 0;
+}
+.nav-section {
+  color: var(--faint);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: var(--s-3) var(--s-3) var(--s-1);
+}
+.nav-section:first-child {
+  margin-top: 0;
+}
+.nav-footer {
+  margin-top: auto;
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--border);
+}
+
+.main {
+  grid-area: main;
+  overflow-y: auto;
+  /*.main is the single vertical scroll OWNER for content. overscroll-behavior:contain
+     stops a scroll gesture that reaches this pane's edge from chaining up to the (non-scrolling) page —
+     no rubber-banding, no runaway scroll bubbling into the fixed chrome. */
+  overscroll-behavior: contain;
+  padding: var(--s-5) var(--s-6);
+  /* Contain the 1fr row/column so a tall or wide screen (e.g. the run-detail flamegraph) scrolls
+     INSIDE this pane instead of forcing the whole shell past 100vh (which made content read as
+     clipped/tucked under the header). min-width:0 also lets wide SVG content scroll locally. */
+  min-height: 0;
+  min-width: 0;
+  /* WCAG 2.2 SC 2.4.11 Focus Not Obscured (AA): the top-bar is a separate, non-overlapping grid row,
+     so a focused control here is never hidden behind it today. This scroll-padding is a guard for any
+     future in-flow sticky sub-header inside .main — keyboard focus (and #anchor jumps) then land clear
+     of it rather than tucked underneath. Harmless while nothing is sticky. */
+  scroll-padding-top: var(--s-4);
+}
+/* Run Profile owns three intentional vertical scroll regions inside the fixed shell. Suppress the
+   ordinary document scroll only while that bounded workbench is mounted; tare:dispose removes this
+   class before any other route renders. */
+.main.main-bounded-workbench {
+  overflow: hidden;
+}
+.main.main-bounded-workbench > .pane {
+  height: 100%;
+  min-height: 0;
+}
+
+/* ---- nav ---- */
+.nav-item {
+  position: relative;
+  display: block;
+  padding: var(--s-2) var(--s-3);
+  margin-bottom: 2px;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: var(--fs-md);
+}
+.nav-item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0;
+  width: 3px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  opacity: 0;
+  transform: translateY(-50%) scaleY(0.5);
+  transition: background-color var(--dur-1) var(--ease-standard),
+    opacity var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
+}
+.nav-item.nav-destination {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.nav-item-icon {
+  color: var(--muted);
+}
+.nav-item.active .nav-item-icon {
+  color: currentColor;
+}
+.nav-item:hover {
+  /* A neutral hover wash stays distinct from the brass current-location marker and focus ring. */
+  background: var(--surface);
+  color: var(--text);
+}
+/* Rail Commands row (.nav-commands) moved to components.css. */
+/* Nav links sit in a list for SR enumeration; strip default list chrome. */
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* Active route: the compact rounded navigation marker used by current desktop navigation systems,
+   plus semibold text. The resting row stays flat; its neutral surface is reserved for hover. */
+.nav-item.active {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+}
+.nav-item.active::before {
+  background: var(--brass);
+  opacity: 1;
+  transform: translateY(-50%) scaleY(1);
+}
+/* System colors retain the current-location marker. */
+@media (forced-colors: active) {
+  .nav-item.active::before {
+    background: Highlight;
+  }
+}
+@media (pointer: coarse) {
+  .nav-item {
+    min-height: 44px;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* ---- cards ---- */
+.cards {
+  display: grid;
+  /* auto-fit reflows to the available inline size (container-driven, no viewport breakpoint) — the
+     card count adapts to width, not a hardcoded @media step. */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s-4);
+  margin-bottom: var(--s-5);
+  /* Content-driven height, NOT row-coupled: each card sizes to its own content
+     and top-aligns, so a taller sibling never stretches its neighbours into dead space. Semantic
+     order is preserved (not masonry / not a visual-order hack). */
+  align-items: start;
+}
+/* Label role: small, semibold, uppercase, muted (still AA) — clearly distinct from body. */
+.label {
+  color: var(--muted);
+  /* Sentence case at 12px: all-caps + 11px + wide tracking + de-emphasis stacked four
+     readability reducers (hard for dyslexic readers, below the label-size floor). Hierarchy now comes
+     from weight + color, not caps. Short eyebrow labels (e.g. nav section heads) may still use caps. */
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.01em;
+  /* Wider title->figure gap so the label reads as a caption above the figure,
+     not a crowded prefix — gives the demoted/hero figures room to breathe. */
+  margin: 0 0 var(--s-3);
+}
+/* Stat role: a secondary figure (mono, bold). Tops out
+   at --fs-xl: a $4000 total and a 38% metric used to shout identically at --fs-2xl;
+   now only the screen's ONE hero figure is promoted (add `.display`), and everything else sits a
+   tier down so the answer stands out. */
+.stat {
+  /* Proportional display, not mono: figures read as crafted finance, not a terminal
+     readout. Mono stays on aligned .num columns / flamegraph / receipt where decimal alignment is the
+     job. slashed-zero makes 0 unmistakable. */
+  font-family: var(--font-display);
+  /* SemiCondensed instance of the Archivo variable face: the wdth axis at 87.5%.
+     Harmless on the SF Pro Display / system-sans fallbacks (they clamp to their nearest width). */
+  font-stretch: 87.5%;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+/* Display tier: the ONE hero figure per screen. Larger, tighter tracking, tabular figures (the
+   `.num` companion already sets tabular-nums; restated here so `.stat.display` alone is correct). */
+.stat.display {
+  font-size: var(--fs-display);
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+/* ---- section ---- */
+/* Content container: groups arbitrary content (tables, flamegraph, notes), so it
+   keeps a hairline border for containment — but drops the heavy resting shadow. One border, no
+   shadow: a container, not a raised box. (Shadow is reserved for floating surfaces.) */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--s-4) var(--s-5);
+  margin-bottom: var(--s-5);
+}
+/* Section-title role: hierarchy by weight and size, not color. Diff headers sit inside a flex
+   wrapper with controls, so they share this treatment and reset their bottom margin below. */
+.section > h2,
+.diff-controls > h2 {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  margin: 0 0 var(--s-3);
+}
+.diff-controls > h2 {
+  margin-bottom: 0;
+}
+/* Wide data tables scroll within their own region rather than clipping or pushing past the main
+   pane (WCAG 1.4.10 Reflow). */
+.datatable,
+.table-scroll {
+  overflow-x: auto;
+}
+/* Reusable horizontal-overflow affordance: a wide table must not rely on a
+   clipped last column to teach people that it scrolls. JS reveals this only when the table is
+   actually wider than its viewport and updates the direction as the user scrolls. Sticky inline
+   positioning keeps the cue at the visible leading edge rather than marooning it off-canvas. */
+.datatable-overflow-cue {
+  position: sticky;
+  inset-inline-start: var(--s-2);
+  width: max-content;
+  max-width: calc(100% - var(--s-4));
+  margin: var(--s-2) var(--s-2) var(--s-1);
+  padding: var(--s-1) var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-sm);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+  pointer-events: none;
+}
+.datatable-overflow-cue[hidden] {
+  display: none;
+}
+
+/* Row-windowing viewport: a bounded scroll region so only a window of rows renders for
+   large cohorts. Bounded max-height = explicit nested-scroll design; sized spacer rows keep
+   the scrollbar spanning the full list. */
+.dt-viewport {
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dt-spacer td {
+  padding: 0;
+  border: 0;
+}
+
+/* Caption / info role: smaller + muted (still AA 4.5:1), de-emphasized by size, not low contrast. */
+.caption {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  margin: 0 0 var(--s-3);
+  max-width: 72ch; /* readable measure for prose; tables/charts stay full-width */
+}
+/* Define-at-point-of-use glossary affordance. */
+.glossary-term {
+  position: relative;
+  white-space: nowrap;
+}
+.glossary-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  margin-inline-start: 3px;
+  font-size: 0.85em;
+  line-height: 1;
+  color: var(--muted);
+  cursor: help;
+  vertical-align: baseline;
+}
+.glossary-info:hover {
+  color: var(--text);
+}
+.glossary-info:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.glossary-def {
+  position: absolute;
+  z-index: 20;
+  inset-inline-start: 0;
+  top: calc(100% + 4px);
+  width: max-content;
+  max-width: 280px;
+  white-space: normal;
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.glossary-def[hidden] {
+  display: none;
+}
+
+/* ---- tables ----
+   Validated against 2026 dense-data-table norms: quiet HORIZONTAL row separators with
+   no vertical grid — the pattern Linear/W&B/Vercel/Stripe converge on for scannable dense data (a full
+   border grid boxes every cell and adds noise; whitespace-only loses the row-tracking a cost table
+   needs). Kept as-is, with two safe refinements: the header underline is slightly stronger so it reads
+   as a header (not just another row), and the last row drops its trailing separator (redundant against
+   the container edge). */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-md);
+}
+th,
+td {
+  text-align: left;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  /* Anchor the header row: a marginally stronger underline distinguishes it from body separators. */
+  border-bottom-width: 2px;
+}
+/* Drop the redundant trailing separator on the final row (noise against the container edge). */
+tr:last-child > td {
+  border-bottom: none;
+}
+td.tokens,
+td.dollars,
+td.save,
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+/* Numeric columns right-align, headers included, so digits line up on the decimal. One rule covers every table; hand-built headers opt in by adding the `.num` class. */
+th.num,
+td.num,
+th.dollars,
+td.dollars,
+th.tokens,
+td.tokens,
+th.save,
+td.save {
+  text-align: right;
+}
+td.dollars {
+  /* Emphasize money by WEIGHT, not the scarce brand accent — painting accent on every dollar cell
+     erased its scarcity. Savings/deltas still carry semantic color via .save etc. */
+  font-weight: 600;
+}
+td.save {
+  color: var(--cost-ok);
+}
+tbody tr:hover {
+  background: var(--state-hover);
+}
+[data-nav-id].nav-selected {
+  background: var(--state-selected);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* ---- selects / inputs ---- */
+select,
+.btn {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: 1.25;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--s-1) var(--s-2);
+  cursor: pointer;
+  /* A button is a button whether it is a <button> or an <a href>. Without this, anchor-based buttons
+     kept the UA underline while real <button>s had none, so the same control looked different
+     depending on its tag — most visibly on every empty-state CTA (`ui/empty.ts` renders
+     `<a class="btn primary">`) and the toolbar's contextual actions. */
+  text-decoration: none;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  box-sizing: border-box;
+}
+select:focus-visible,
+.btn:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Restrained, tasteful state transitions (disabled under prefers-reduced-motion via tokens.css). */
+.nav-item,
+.btn,
+.tab {
+  transition: background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
+}
+
+/* Text selection follows the accent bridge: a translucent accent wash keeps the text
+   legible on any surface; brand accent by default, OS accent when the bridge is active. Forced-colors
+   overrides this with system Highlight (tokens.css). */
+::selection {
+  background: color-mix(in srgb, var(--accent-system) 28%, transparent);
+}
+
+/* ---- interactive control states ----
+   Real hover/active/disabled + native accent-color, so buttons, dropdowns and text fields read as
+   one control family on every OS. Depth comes from the same --state-* wash the nav uses (one source
+   of truth), not new colors. Text inputs share the select/.btn box via a generic `input` + a reusable
+   `.input` class; component inputs (.palette-input/.field input) keep their
+   own chrome because their class selectors outrank the bare `input` element rule. */
+input,
+.input {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--s-1) var(--s-2);
+}
+select:hover:not(:disabled),
+.btn:hover:not(:disabled),
+input:hover:not(:disabled),
+.input:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: color-mix(in oklch, var(--surface-2), var(--state-hover));
+}
+select:active:not(:disabled),
+.btn:active:not(:disabled) {
+  background: color-mix(in oklch, var(--surface-2), var(--state-active));
+}
+select:disabled,
+.btn:disabled,
+.btn[disabled],
+input:disabled,
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* Native form controls tint to the brand accent (identity-aware — resolves --accent in the cascade). */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+  accent-color: var(--accent);
+}
+/* Toggles/sliders opt out of the text-field box. */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  border: none;
+  background: none;
+  padding: 0;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  min-width: 0;
+  cursor: pointer;
+}
+/* Custom select chevron: native dropdown arrows vary wildly per-OS, so draw our own for a consistent
+   control across macOS/Windows/Linux. appearance:none + an inline-SVG chevron; trailing padding
+   reserves its space. Mid-gray chevron reads legibly on both the dark and light --surface-2. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--s-2) center;
+  padding-right: calc(var(--s-2) * 2 + 10px);
+}
+/* Primary CTA gets its own state layer over the accent fill (darken, since a wash would wash out).
+   Uses the bridge token so the OS accent (when active) darkens on hover too. */
+.btn.primary:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--accent-system), black 8%);
+  border-color: color-mix(in oklch, var(--accent-system), black 8%);
+}
+.btn.primary:active:not(:disabled) {
+  background: color-mix(in oklch, var(--accent-system), black 14%);
+  border-color: color-mix(in oklch, var(--accent-system), black 14%);
+}
+
+/* ---- flame / chart hosts (wrap the trusted SVG, never restyle its internals) ---- */
+.flame,
+.trend {
+  width: 100%;
+  overflow-x: auto;
+}
+/* The trend fills the pane width; the flamegraph keeps its NATIVE width and scrolls inside .flame.
+   (max-width:100% on .flame svg cancels .flame's overflow-x:auto and shrinks labels to illegibility
+   on a narrow pane —.) */
+.trend svg {
+  max-width: 100%;
+  height: auto;
+}
+.flame svg {
+  height: auto;
+}
+
+/* Scatter + parcoords scale down to fit a narrow pane instead of overflowing it and forcing the
+   whole main pane to scroll; both emit a matching viewBox so downscaling is lossless. */
+.scatter,
+.parcoords {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+/* Shaped loading skeletons: static blocks; shimmer only when motion is welcome. */
+.skeleton-block {
+  background: var(--surface-2);
+  border-radius: var(--radius);
+}
+.skel-card {
+  height: 68px;
+}
+.skel-row {
+  height: 16px;
+  margin-bottom: var(--s-2);
+}
+.skel-row:nth-child(3n) {
+  width: 70%;
+}
+.skel-rows {
+  margin-top: var(--s-3);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton-block {
+    background: linear-gradient(
+      90deg,
+      var(--surface-2) 25%,
+      var(--surface) 50%,
+      var(--surface-2) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.3s ease-in-out infinite;
+  }
+  @keyframes skeleton-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+/* Intentional empty state: a centered glyph + title + hint + CTA (an onboarding ramp). */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s-2);
+  padding: var(--s-6) var(--s-4);
+  color: var(--muted);
+}
+.empty-state .empty-glyph {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+.empty-state .empty-title {
+  color: var(--text);
+  font-weight: 600;
+  margin: 0;
+}
+.empty-state .empty-hint {
+  margin: 0 0 var(--s-3);
+  max-width: 42ch;
+}
+/* Onboarding wizard: a 3-step capture-first arc. */
+.onboard-steps {
+  display: flex;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.onboard-step.active {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.onboard-step.done {
+  color: var(--cost-ok);
+}
+.onboard-optional > summary {
+  min-height: 24px;
+  cursor: pointer;
+}
+.onboard-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+.onboard-wait {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+.onboard-wait.captured {
+  border-style: solid;
+  border-color: var(--cost-ok);
+}
+.onboard-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: onboard-spin 0.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .onboard-spinner {
+    animation: none;
+  }
+}
+@keyframes onboard-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Per-provider capture recommendation banner. */
+.capture-reco {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  margin-bottom: var(--s-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  font-size: var(--fs-sm);
+}
+.reco-tag {
+  flex: none;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Centered "No data" label for empty scatter/parcoords SVGs. */
+.chart-empty {
+  fill: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+}
+.scatter-axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.scatter-axis-label {
+  fill: var(--muted);
+  font-size: 10px;
+}
+/* Faint Y gridlines + 11px muted tick values give the plot a scale to read against. */
+.scatter-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  opacity: 0.45;
+}
+.scatter-tick {
+  fill: var(--muted);
+  font-size: 11px;
+}
+/* Stroke-ring dots with a translucent fill: overlapping points accumulate into visible density and
+   the ring keeps each point legible on any surface. */
+.scatter-dot {
+  fill: color-mix(in srgb, var(--data-ink) 22%, transparent);
+  stroke: var(--data-ink);
+  stroke-width: 1.5;
+}
+/* Tone-colored points: SVG needs `fill`/`stroke`, not `color`. */
+.scatter-dot.cost-ok {
+  fill: color-mix(in srgb, var(--cost-ok) 22%, transparent);
+  stroke: var(--cost-ok);
+}
+.scatter-dot.cost-warn {
+  fill: color-mix(in srgb, var(--cost-warn) 22%, transparent);
+  stroke: var(--cost-warn);
+}
+.scatter-dot.cost-high {
+  fill: color-mix(in srgb, var(--cost-high) 22%, transparent);
+  stroke: var(--cost-high);
+}
+/* Tone-safe emphasis on hover: thicken the ring, don't recolor the fill. */
+.scatter-dot:hover {
+  stroke-width: 2.5;
+}
+/* Quadrant crosshairs: faint dashed median lines splitting the scatter into 4. */
+.scatter-quadrant {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.7;
+}
+/* On-chart quadrant-region labels: faint corner captions naming each region. */
+.scatter-quadrant-label {
+  fill: var(--muted);
+  font-size: 8px;
+  opacity: 0.8;
+}
+/* Parallel-coordinates: axes + per-run polylines, tone-colored by total spend. */
+.pc-axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.pc-axis-label {
+  fill: var(--muted);
+  font-size: 9px;
+}
+/* Per-axis numeric min/max ticks: the range each axis normalizes over. */
+.pc-axis-tick {
+  fill: var(--muted);
+  font-size: 8px;
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+/* Shared cost-band legend: maps the three cost tones to cheaper→costlier next to any
+   chart that tints marks by spend, so the color direction isn't guesswork. */
+.cost-legend {
+  display: flex;
+  gap: var(--s-3);
+  align-items: center;
+  margin-top: var(--s-2);
+}
+.cost-legend-item {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.cost-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.cost-legend-swatch.cost-ok {
+  background: var(--cost-ok);
+}
+.cost-legend-swatch.cost-warn {
+  background: var(--cost-warn);
+}
+.cost-legend-swatch.cost-high {
+  background: var(--cost-high);
+}
+.pc-line {
+  stroke: var(--data-ink);
+  stroke-width: 1.5;
+  opacity: 0.75;
+}
+.pc-line.cost-ok {
+  stroke: var(--cost-ok);
+}
+.pc-line.cost-warn {
+  stroke: var(--cost-warn);
+}
+.pc-line.cost-high {
+  stroke: var(--cost-high);
+}
+/* Hover isolates: dim every line except the hot one (live DOM only). */
+.parcoords.pc-hovering .pc-line:not(.pc-hot) {
+  opacity: 0.12;
+}
+.pc-line.pc-hot {
+  stroke-width: 2.5;
+  opacity: 1;
+}
+/* Reusable data table: sortable headers + a search/regex control row. */
+.dt-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+/* Quick-filter chips: toggle buttons above a table; engaged = accent fill. */
+.dt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+.dt-chip {
+  font-size: var(--fs-sm);
+  padding: 2px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.dt-chip:hover {
+  background: var(--state-hover);
+}
+.dt-chip[aria-pressed="true"] {
+  background: var(--accent-weak);
+  border-color: var(--accent-system); /* engaged chip border follows the system accent */
+  color: var(--text);
+}
+.dt-search {
+  font: inherit;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  min-width: 16ch;
+}
+.dt-regex {
+  font-size: 0.85em;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  cursor: pointer;
+}
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+th.sortable:hover {
+  color: var(--text);
+}
+.compare-matrix {
+  min-width: max-content;
+}
+.compare-matrix th:first-child,
+.compare-matrix td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+.compare-matrix th:first-child {
+  z-index: 2;
+}
+/* Calibrated Compare: Baseline B stays visually fixed before an ordered candidate set. Controls
+   wrap at native window widths and keep platform-standard form behavior on every desktop OS. */
+.compare-mode-control,
+.compare-match-controls,
+.compare-match-controls label,
+.compare-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+.compare-mode-control,
+.compare-match-controls {
+  margin-bottom: var(--s-4);
+}
+.compare-mode-control > span,
+.compare-match-controls label > span {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.compare-chips {
+  margin-bottom: var(--s-4);
+}
+.compare-chip.chip {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+}
+.compare-chip.baseline {
+  border-color: var(--border-strong);
+  font-weight: var(--fw-semibold);
+}
+.compare-chip button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+.compare-chip button:disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.55;
+}
+.compare-summary-matrix {
+  min-width: max-content;
+}
+.compare-frontier-table,
+.compare-trial-table {
+  min-width: max-content;
+}
+.compare-scroll-cue {
+  display: none;
+}
+.compare-summary-matrix th:first-child,
+.compare-summary-matrix td:first-child,
+.compare-frontier-table th:first-child,
+.compare-frontier-table td:first-child,
+.compare-trial-table th:first-child,
+.compare-trial-table td:first-child,
+.compare-decomp-table th:first-child,
+.compare-decomp-table td:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 1px 0 var(--border);
+}
+.compare-summary-matrix thead th:first-child,
+.compare-frontier-table thead th:first-child,
+.compare-trial-table thead th:first-child,
+.compare-decomp-table thead th:first-child {
+  z-index: 2;
+}
+@media (max-width: 720px) {
+  .compare-scroll-cue {
+    display: block;
+    position: sticky;
+    inset-inline-start: 0;
+    width: max-content;
+    padding: var(--s-1) var(--s-2);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+}
+.compare-unmatched-row td {
+  background: color-mix(in srgb, var(--cost-warn) 7%, transparent);
+}
+.compare-pair-controls,
+.compare-pair-controls label,
+.compare-frontier-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+.compare-pair-controls label {
+  gap: var(--s-2);
+}
+.compare-pair-controls label > span {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.compare-pair-status {
+  margin-bottom: 0;
+}
+.compare-frontier-footer {
+  justify-content: space-between;
+  margin-top: var(--s-4);
+}
+.compare-basis-warning,
+.compare-warning {
+  padding: var(--s-3) var(--s-4);
+  border-left: 3px solid var(--cost-warn);
+  background: color-mix(in srgb, var(--cost-warn) 8%, transparent);
+}
+/* Compare decomposition + cause diff: two DISTINCT lenses, so they read as separate
+   sections. The reference toggle sits with the other match controls; the cause diff lays its largest
+   increases/decreases side by side and collapses to one column at narrow native widths. A component or
+   cause that moves AGAINST the aggregate direction (a reversal) is de-emphasized, never recolored into
+   a false severity — direction lives in the text, color is secondary. */
+.compare-reference-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+.compare-reference-control > span {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.compare-decomp-block {
+  margin-bottom: var(--s-4);
+}
+.compare-decomp-check {
+  margin-top: var(--s-2);
+}
+.compare-cause-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--s-4);
+}
+.compare-cause-list {
+  margin: 0;
+  padding-left: var(--s-4);
+}
+.compare-cause-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--s-3);
+  align-items: baseline;
+  padding: var(--s-1) 0;
+}
+.compare-cause-list .sub {
+  grid-column: 1 / -1;
+}
+.compare-reversal {
+  opacity: 0.82;
+  font-style: italic;
+}
+/* Structural flame diff: a deterministic typed-tree table, NOT the export SVG. Depth
+   is encoded by inline padding + aria-level; direction lives in the text and a left border, so it reads
+   in forced-colors without relying on fills. A changed frame gets a semantic edge (cost-high up /
+   cost-ok down); an unchanged frame is muted. Frame names that drill are button "links". */
+.flame-diff-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-4);
+  margin-bottom: var(--s-3);
+}
+.flame-diff-modes {
+  display: inline-flex;
+  gap: var(--s-1);
+}
+.flame-diff-modes button {
+  padding: var(--s-1) var(--s-3);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.flame-diff-modes button.active {
+  background: var(--surface-2);
+  font-weight: var(--fw-semibold);
+}
+.flame-diff-diffonly {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 24px;
+}
+.flame-diff-name.linklike,
+.flame-diff-focus .linklike {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 24px;
+  min-height: 24px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.flame-diff-frame {
+  font-weight: normal;
+  white-space: nowrap;
+}
+.flame-diff-cache {
+  margin-left: var(--s-2);
+  padding: 0 var(--s-1);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.flame-diff-table tr {
+  border-left: 3px solid transparent;
+}
+.flame-diff-up {
+  border-left-color: var(--cost-high);
+}
+.flame-diff-down {
+  border-left-color: var(--cost-ok);
+}
+.flame-diff-flat {
+  color: var(--muted);
+}
+.flame-diff-pagination {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+  padding: var(--s-2);
+  border-block: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(8px);
+}
+.flame-diff-page-status {
+  margin-inline-end: auto;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+.flame-diff-page-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.flame-diff-page-input {
+  width: 6ch;
+  min-height: 28px;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 520px) {
+  .flame-diff-page-status {
+    flex-basis: 100%;
+  }
+}
+.empty {
+  color: var(--faint);
+  padding: var(--s-5);
+  text-align: center;
+}
+/* Loading stays visually distinct from empty without fading its text below AA contrast. The small
+   marker carries the motion; the status copy itself remains at full opacity throughout. */
+.skeleton {
+  color: var(--muted);
+  padding: var(--s-5);
+  text-align: center;
+}
+.skeleton::after {
+  content: "";
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  margin-inline-start: var(--s-2);
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 0.05em;
+  animation: skeleton-marker-pulse 1.2s ease-in-out infinite;
+}
+@keyframes skeleton-marker-pulse {
+  0%,
+  100% { transform: scale(0.65); }
+  50% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+.error {
+  color: var(--cost-high);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--cost-high);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--cost-high) 10%, var(--surface));
+}
+.unpriced {
+  color: var(--cost-warn);
+  font-size: var(--fs-sm);
+  margin-top: var(--s-3);
+}
+
+.chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.explain {
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--s-4);
+  margin: 0;
+  overflow-x: auto;
+}
+
+/* ---- forms (settings / onboarding) ---- */
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+  max-width: 640px;
+}
+.field-label {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.field input,
+.field select {
+  min-width: 220px;
+  max-width: 100%;
+}
+.subhead {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: var(--s-4) 0 var(--s-2);
+}
+.advanced summary {
+  min-height: 24px;
+  cursor: pointer;
+  color: var(--accent-text);
+  font-size: var(--fs-sm);
+  margin: var(--s-3) 0;
+}
+.save-status {
+  color: var(--cost-ok);
+  font-size: var(--fs-sm);
+}
+.btn.primary {
+  /* Reads the bridge tokens: brand accent by default, the contrast-clamped OS accent
+     when the system-accent bridge is active. */
+  background: var(--accent-system);
+  color: var(--on-accent-system);
+  border-color: var(--accent-system);
+  padding: var(--s-2) var(--s-4);
+  margin-top: var(--s-3);
+}
+/* Ghost/secondary button role: base+modifier like .btn.primary. Previously the
+   single-class `btn-ghost` had NO rule, so those buttons rendered unstyled — all call sites are now
+   normalized to `btn ghost` and pick up the .btn base (padding/radius/cursor/focus-ring) + this. */
+.btn.ghost {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--border);
+}
+.btn.ghost:hover {
+  color: var(--text);
+  background: var(--state-hover);
+}
+.onboard {
+  max-width: 560px;
+}
+
+/* ---- diff / receipts controls ---- */
+.diff-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 24px;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.diff-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 24px;
+}
+
+/* ---- Local service card: the embedded daemon as a managed service ---- */
+.service-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+.service-row .service-label {
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+.service-row .btn {
+  margin-left: auto;
+}
+
+/* ---- command palette (⌘K) ---- */
+/* In-page Find bar: a compact floating control top-right of the content, over the
+   analytical canvas. No scrim — find is non-modal so you can read matches in context. */
+.find-bar {
+  position: fixed;
+  top: calc(var(--titlebar-height, 44px) + var(--s-2));
+  right: var(--s-4);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-2);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.find-input {
+  width: 16ch;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+.find-input:focus-visible {
+  outline: none;
+}
+.find-status {
+  min-width: 5ch;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+.find-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.find-nav:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.find-prev .icon {
+  transform: rotate(180deg); /* the shared right-chevron, flipped to point back */
+}
+mark.find-hit {
+  background: var(--accent-weak);
+  color: inherit;
+  border-radius: 2px;
+}
+mark.find-hit.current {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  background: var(--scrim);
+}
+.palette {
+  width: min(560px, 92vw);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.palette-input {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-lg);
+  padding: var(--s-3) var(--s-4);
+  outline: none;
+}
+.palette-list {
+  overflow-y: auto;
+  padding: var(--s-1);
+}
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: var(--fs-md);
+}
+.palette-group + .palette-group {
+  margin-top: var(--s-1);
+}
+.palette-group-label {
+  margin: var(--s-2) var(--s-3) var(--s-1);
+  color: var(--faint);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.palette-item-copy {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+}
+.palette-item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.palette-item-subtitle,
+.palette-empty {
+  color: var(--faint);
+  font-size: var(--fs-xs);
+}
+.palette-item-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.palette-empty {
+  margin: var(--s-4);
+}
+/* The chord hint sits right-aligned, teaching the keyboard shortcut for the row. */
+.palette-item-hint {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.palette-item.active {
+  background: var(--accent-weak);
+  color: var(--text);
+}
+
+/* ---- toasts ---- */
+.toasts {
+  position: fixed;
+  right: var(--s-5);
+  bottom: var(--s-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  /* Above the ⌘K palette scrim (z-index 100) so an over-budget/anomaly alert is never hidden
+     behind an open command palette. */
+  z-index: 200;
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  font-size: var(--fs-sm);
+  max-width: 320px;
+}
+.toast-msg {
+  flex: 1;
+}
+.toast-close {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 24px;
+  min-height: 24px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: var(--fs-md);
+  line-height: 1;
+  padding: 0;
+}
+.toast-close:hover {
+  color: var(--text);
+}
+.toast-warn {
+  border-color: var(--cost-warn);
+}
+.toast-over {
+  border-color: var(--cost-high);
+}
+.toast-anomaly {
+  border-color: var(--cost-warn);
+}
+
+/* Inline keyboard-shortcut hint chip. */
+.kbd-hint {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+}
+/* label | proportional bar | dollars | share — the bar gives instant visual rank. */
+.driver-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(96px, 2fr) auto auto auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-1) 0;
+}
+/* A de-emphasized driver row — e.g. the "unbucketed" remainder in Units of work. */
+.driver-row.is-muted {
+  opacity: 0.62;
+}
+.driver-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.driver-bar-track {
+  height: 8px;
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.driver-bar {
+  height: 100%;
+  background: var(--data-ink);
+  border-radius: inherit;
+}
+.driver-cost {
+  font-size: var(--fs-sm);
+  text-align: right;
+}
+.driver-share {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  text-align: right;
+  min-width: 3ch;
+}
+/* ---- recomputation receipt as a typeset statement ---- */
+.receipt-ledger {
+  margin: var(--s-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-1) 0;
+  border-bottom: 1px solid var(--border);
+}
+.receipt-row:last-child {
+  border-bottom: none;
+}
+.receipt-row dt {
+  margin: 0;
+  color: var(--muted);
+}
+.receipt-row dd {
+  margin: 0;
+  color: var(--text);
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+
+/* Capture-health pill: dot (shape) + color + text, never hue-only. */
+.capture-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.82em;
+  white-space: nowrap;
+}
+.capture-dot {
+  font-size: 0.7em;
+  line-height: 1;
+}
+.capture-dot.capture-ok {
+  color: var(--cost-ok);
+}
+.capture-dot.capture-warn {
+  color: var(--cost-warn);
+}
+.capture-dot.capture-error {
+  color: var(--cost-high);
+}
+.capture-text {
+  color: var(--muted);
+}
+.capture-pill.capture-error .capture-text {
+  color: var(--cost-high);
+}
+
+/* Lifecycle state pill: a small bordered chip with a leading glyph. Severity tints the
+   glyph + border; the label stays readable. Glyph is always paired with text (never hue-only). */
+.state-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 1px var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--text);
+}
+.state-pill .state-glyph {
+  font-size: 0.8em;
+  line-height: 1;
+}
+.state-pill.state-ok .state-glyph {
+  color: var(--cost-ok);
+}
+.state-pill.state-warn {
+  border-color: var(--cost-warn);
+}
+.state-pill.state-warn .state-glyph {
+  color: var(--cost-warn);
+}
+.state-pill.state-error {
+  border-color: var(--cost-high);
+}
+.state-pill.state-error .state-glyph {
+  color: var(--cost-high);
+}
+.state-pill.state-neutral {
+  color: var(--muted);
+}
+
+.dollars.cost-high {
+  color: var(--cost-high);
+}
+.dollars.save {
+  color: var(--cost-ok);
+}
+
+/* Recent/pinned runs in the sidebar. */
+.nav-run {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.nav-run-copy,
+.nav-view-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.nav-run-id {
+  /* min-width:0 lets the ellipsis engage inside the flex row (flex items default to min-content
+     width, which would otherwise let a long opaque run id widen/overflow the sidebar). */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-run-meta,
+.nav-view-meta {
+  overflow: hidden;
+  color: var(--faint);
+  font-size: var(--fs-xs);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-see-all {
+  font-size: var(--fs-sm);
+}
+.nav-run-glyph {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted); /* the inline SVG icon inherits this via currentColor */
+}
+/* Saved Views in the sidebar. */
+.nav-view-row {
+  display: flex;
+  align-items: center;
+}
+.nav-view-row .nav-view {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-view-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-view-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px; /* WCAG 2.2 SC 2.5.8 target size */
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  padding: 0;
+}
+.nav-view-row:hover .nav-view-del,
+.nav-view-row:focus-within .nav-view-del {
+  opacity: 1;
+}
+.nav-empty {
+  padding: 0 var(--s-4);
+  color: var(--muted);
+}
+
+.error-state {
+  margin: var(--s-4) 0;
+}
+.error-state > .error {
+  margin-block: 0 var(--s-3);
+}
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.error-actions .btn {
+  display: inline-flex;
+  flex: 0 1 11rem;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: var(--s-2) var(--s-3);
+  margin: 0;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Per-field config provenance labels. */
+.field-origin {
+  font-size: 10px;
+  margin-left: var(--s-2);
+  color: var(--muted);
+}
+.field-origin.origin-env {
+  color: var(--cost-warn);
+  font-weight: 600;
+}
+
+/* Alert-rule editor in Settings. */
+.alert-rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+.alert-rule-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: 2px 0;
+}
+
+/* Raw-config view in Settings. */
+.raw-config-wrap {
+  margin-top: var(--s-3);
+}
+.raw-config-wrap > summary {
+  min-height: 24px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.raw-config {
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre;
+}
+
+/* Global analysis range control in the topbar. */
+.range-control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.range-message:empty {
+  display: none;
+}
+.range-message:not(:empty) {
+  max-width: 28ch;
+}
+.range-date[aria-invalid="true"] {
+  border-color: var(--cost-high);
+}
+/* When gated off a non-range-honoring screen, actually collapse — the class-level
+   display:inline-flex above would otherwise override the UA [hidden] rule and leave it visible. */
+.range-control[hidden] {
+  display: none;
+}
+.range-select,
+.range-date {
+  min-height: 24px; /* WCAG 2.2 SC 2.5.8 target size */
+  font-size: var(--fs-sm);
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+.range-date[hidden] {
+  display: none;
+}
+
+/* Lens subtitle: the one-line "this screen is a lens on the flamegraph" framing. Muted
+   and slightly emphasized, sitting above the screen's content. */
+.lens {
+  margin: 0 0 var(--s-3);
+  color: var(--muted);
+  font-size: var(--fs-md);
+  font-style: italic;
+  max-width: 72ch; /* readable measure for prose */
+}
+/* Cost×quality frontier: non-dominated runs get a subtle leading accent so the
+   frontier reads down the ranked table at a glance. */
+tr.on-frontier td:first-child {
+  box-shadow: inset 3px 0 0 var(--cost-ok);
+}
+
+/* Browser/narrow-window reflow. The desktop shell is primary, but the same UI ships in a browser;
+   below this width the fixed rail becomes a horizontal route strip and dense ranked rows stack into
+   readable two-line summaries instead of overflowing. Kept strictly BELOW the desktop window's
+   minWidth (760, tauri.conf.json) so the shell can never render the phone layout at its own minimum
+   size (chrome sub-decision #6) — the 760==760 collision put it one pixel into mobile. */
+@media (max-width: 700px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto 1fr 28px;
+    grid-template-areas:
+      "brand"
+      "topbar"
+      "nav"
+      "main"
+      "status";
+    height: 100dvh;
+  }
+
+  .brand {
+    min-height: var(--topbar-h);
+    padding: 0 var(--s-3);
+  }
+
+  .topbar {
+    min-height: var(--topbar-h);
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    padding: var(--s-2) var(--s-3);
+  }
+
+  .topbar-center {
+    display: none; /* empty spacer since the breadcrumb moved to the lead */
+  }
+
+  .topbar-lead,
+  .topbar-trail {
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-1);
+    min-height: 0;
+    padding: var(--s-2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-section,
+  .nav-tagline,
+  .nav-empty {
+    display: none;
+  }
+
+  .nav-views,
+  .nav-runs,
+  .nav-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--s-1);
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .nav-view-row {
+    flex: 0 0 auto;
+  }
+
+  .nav-item {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .main {
+    padding: var(--s-4);
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .driver-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--s-2);
+  }
+
+  .driver-label {
+    grid-column: 1;
+  }
+
+  .driver-cost {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .driver-bar-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .driver-share {
+    grid-column: 1;
+    grid-row: 3;
+    text-align: left;
+  }
+
+  .field {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dt-controls,
+  .diff-controls,
+  .service-row,
+  .capture-reco,
+  .onboard-steps,
+  .onboard-nav {
+    align-items: stretch;
+  }
+
+  .toasts {
+    right: var(--s-3);
+    left: var(--s-3);
+    bottom: var(--s-5);
+  }
+
+  .toast {
+    max-width: none;
+  }
+}

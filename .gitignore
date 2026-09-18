@@ -1,0 +1,41 @@
+# Rust
+/target
+**/*.rs.bk
+Cargo.lock.bak
+
+# Node / web
+node_modules/
+web/dist/
+web/node_modules/
+*.tsbuildinfo
+# Playwright E2E artifacts — traces, screenshots, videos, and HTML reports
+web/test-results/
+web/playwright-report/
+web/blob-report/
+web/.playwright/
+
+# Tauri build output
+tare-tauri/target/
+tare-tauri/gen/
+
+# Local secrets — never commit
+.env
+.env.local
+*.key
+litellm_key.txt
+# Privacy: machine-local salt and config must never be committed
+tare.toml
+*.salt
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Local runtime SQLite store (never version-controlled — runtime artifact, churns per run)
+tare.db
+tare.db-shm
+tare.db-wal
+*.db-shm
+*.db-wal
+# Generated Calibrated Bench fixture DB (reproducible via `cargo run --example seed_calibrated_bench`)
+tare-calibrated-bench.db

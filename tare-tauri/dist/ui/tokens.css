@@ -1,0 +1,258 @@
+/* Tare design tokens. The single Calibrated Bench identity uses warm paper/ink neutrals, a cool
+   registrar-ink action color, and a separate aged-brass location marker. `data-theme` selects light
+   or dark appearance; the temporary `data-identity="brass"` selectors below migrate old stored
+   preferences to `bench`. Component CSS consumes these roles rather than adding raw colors. Export
+   SVG renderers keep their fixed compatibility palette; screen charts use these live tokens. */
+
+:root {
+  /* ---------- Type ---------- */
+  /* Self-hosted Calibrated Bench faces first (@font-face in fonts.css), then the system
+     stacks as fallbacks — so text renders instantly on font-display:swap and stays readable if a face
+     is unavailable. */
+  --font-sans: "Atkinson Hyperlegible Next", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  /* Proportional DISPLAY face for the one hero figure per screen: crafted finance, not a
+     terminal readout. Archivo (SemiCondensed via the wdth axis; the display rule sets font-stretch),
+     falling back to SF Pro Display / system-sans everywhere the webfont is unavailable. */
+  --font-display: "Archivo", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  /* Body base is TARGET-AWARE: 14px here for the BROWSER target — 13px sat below the
+     14–16px web-body convention and leaned on user zoom. The Tauri desktop shell pins this back to
+     13px in desktop.css, where 13px matches the macOS HIG and the density was reviewed. Bumping the
+     web target UP (roomier, not tighter) is low-risk and reversible; the native app is unchanged. */
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 30px;
+  /* Display tier: reserved for the ONE hero figure per screen (the answer the
+     screen exists to give). Everything else tops out at --fs-2xl so the hero doesn't have to
+     compete. Pair with .stat.display (tight tracking + tabular figures). */
+  --fs-display: 44px;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* ---------- Space (8px rhythm) ---------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-8: 48px;
+
+  /* ---------- Radius / chrome ---------- */
+  --radius: 8px;
+  --radius-sm: 5px;
+  --radius-lg: 12px;
+  /* Fully-rounded ends for pills/badges. Consumed by workspaces.css (Optimize state + verification
+     badges, scenario scope badge) — which referenced it before it existed, so an invalid var()
+     substitution made border-radius compute to its initial 0 and those three shipped badges rendered
+     as sharp rectangles while every legacy pill hardcoded 999px. */
+  --radius-pill: 999px;
+  --sidebar-w: 224px;
+  /* Standard-ish titlebar height so the topbar content vertically aligns with the macOS traffic
+     lights (which Overlay pins near the top, center ~14pt); 48px pushed content to ~24pt, well below
+     the lights. */
+  --topbar-h: 32px;
+
+  /* ---------- Motion ---------- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-panel-enter: 240ms;
+  --dur-panel-exit: 180ms;
+
+  /* ---------- Default Calibrated Bench dark colors until data-identity is set ---------- */
+  color-scheme: dark;
+  --bg: oklch(0.175 0.014 55);
+  --surface: oklch(0.215 0.016 55);
+  --surface-2: oklch(0.260 0.017 55);
+  --surface-inset: oklch(0.150 0.012 55);
+  --border: oklch(0.360 0.018 55);
+  --border-strong: oklch(0.520 0.020 55);
+  --text: oklch(0.930 0.014 60);
+  --muted: oklch(0.735 0.016 58);
+  --faint: oklch(0.680 0.016 58);
+  --data-ink: oklch(0.800 0.020 58); /* single-series data marks use neutral ink, never the action color */
+  /* Stable categorical palette, reused per-category everywhere (composition,
+     flamegraph classes, prompt anatomy, trend series). Hue-spread AND lightness-varied so
+     categories survive grayscale / red-green CVD, kept clear of the severity ramp; screen-only. */
+  --cat-1: oklch(0.72 0.14 205);
+  --cat-2: oklch(0.80 0.13 290);
+  --cat-3: oklch(0.74 0.15 330);
+  --cat-4: oklch(0.82 0.13 130);
+  --cat-5: oklch(0.86 0.12 95);
+  --cat-6: oklch(0.68 0.14 45);
+  --accent: oklch(0.720 0.120 262);
+  --accent-text: oklch(0.760 0.110 262);
+  --accent-weak: oklch(0.270 0.045 262);
+  --on-accent: oklch(0.180 0.030 262);
+  /* Aged Brass (#C39A58): the restrained current-location indicator — warm, low-chroma,
+     distinct from the ink-blue --accent + severity ramps. Drives compact nav markers and tab lines,
+     never a selected fill. 7.31:1 vs --bg (well past the 3:1 non-text floor). */
+  --brass: oklch(0.710 0.097 78);
+  --cost-ok: oklch(0.860 0.100 165);
+  --cost-warn: oklch(0.760 0.130 62);
+  --cost-high: oklch(0.660 0.190 25);
+  --surface-raised: oklch(0.260 0.017 55);
+  --focus-ring: oklch(0.720 0.120 262);
+  --scrim: oklch(0 0 0 / 0.45); /* modal/palette dimmer — theme-independent */
+  --shadow: 0 1px 2px oklch(0 0 0 / 0.45), 0 8px 24px oklch(0 0 0 / 0.3);
+
+  /* ---------- State layers + elevation ---------- */
+  /* Translucent accent overlays composited on interactive surfaces, so hover/active/selected read
+     with uniform depth from one source. Identity-aware: they resolve `--accent` in the cascade, so
+     a single :root definition tracks every identity + mode. Overlaid (mix with transparent) rather
+     than a hardcoded surface swap. */
+  --state-hover: color-mix(in oklch, var(--accent) 10%, transparent);
+  --state-active: color-mix(in oklch, var(--accent) 18%, transparent);
+  --state-selected: color-mix(in oklch, var(--accent) 14%, transparent);
+  /* System-accent bridge: affordances (focus ring, selection, primary fill,
+     engaged chips) read these instead of --accent, so the OS accent can drive them WITHOUT touching
+     --accent — data/chart encodings that read --accent stay brand-stable. Default = brand accent,
+     resolved lazily per identity, so with no bridge active the UI is byte-identical. The applier
+     (systemAccent.ts) overrides these INLINE on <html> — beating the per-identity tokens — only when
+     eligible (default identity) and only with a contrast-clamped OS accent. */
+  --accent-system: var(--accent);
+  --on-accent-system: var(--on-accent);
+  /* Elevation pair (the two halves of --shadow): small = resting lift, large = raised / menus. */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.45);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.30);
+}
+
+/* Lighter elevation in light mode (mirrors the softer --shadow the identity light blocks use). */
+[data-theme="light"] {
+  --shadow-sm: 0 1px 2px oklch(0.55 0.02 55 / 0.12);
+  --shadow-lg: 0 8px 24px oklch(0.55 0.02 55 / 0.12);
+}
+
+/* Calibrated Bench identity — dark "evening edition". `bench` is the committed
+   identity; `brass` is a temporary migration alias (theme.ts rewrites stored values). */
+[data-identity="bench"],
+[data-identity="brass"] {
+  color-scheme: dark;
+  --bg: oklch(0.175 0.014 55);
+  --surface: oklch(0.215 0.016 55);
+  --surface-2: oklch(0.260 0.017 55);
+  --surface-inset: oklch(0.150 0.012 55);
+  --border: oklch(0.360 0.018 55);
+  --border-strong: oklch(0.520 0.020 55);
+  --text: oklch(0.930 0.014 60);
+  --muted: oklch(0.735 0.016 58);
+  --faint: oklch(0.680 0.016 58);
+  --data-ink: oklch(0.800 0.020 58); /* single-series data marks use neutral ink, never the action color */
+  /* Stable categorical palette, reused per-category everywhere (composition,
+     flamegraph classes, prompt anatomy, trend series). Hue-spread AND lightness-varied so
+     categories survive grayscale / red-green CVD, kept clear of the severity ramp; screen-only. */
+  --cat-1: oklch(0.72 0.14 205);
+  --cat-2: oklch(0.80 0.13 290);
+  --cat-3: oklch(0.74 0.15 330);
+  --cat-4: oklch(0.82 0.13 130);
+  --cat-5: oklch(0.86 0.12 95);
+  --cat-6: oklch(0.68 0.14 45);
+  --accent: oklch(0.720 0.120 262);
+  --accent-text: oklch(0.760 0.110 262);
+  --accent-weak: oklch(0.270 0.045 262);
+  --on-accent: oklch(0.180 0.030 262);
+  /* Aged Brass (#C39A58): the restrained current-location indicator — warm, low-chroma,
+     distinct from the ink-blue --accent + severity ramps. Drives compact nav markers and tab lines,
+     never a selected fill. 7.31:1 vs --bg (well past the 3:1 non-text floor). */
+  --brass: oklch(0.710 0.097 78);
+  --cost-ok: oklch(0.860 0.100 165);
+  --cost-warn: oklch(0.760 0.130 62);
+  --cost-high: oklch(0.660 0.190 25);
+  --surface-raised: oklch(0.260 0.017 55);
+  --focus-ring: oklch(0.720 0.120 262);
+  --shadow: 0 1px 2px oklch(0 0 0 / 0.45), 0 8px 24px oklch(0 0 0 / 0.3);
+}
+[data-identity="bench"][data-theme="light"],
+[data-identity="brass"][data-theme="light"] {
+  color-scheme: light;
+  /* Calibrated Bench "day edition" — warm drafting-paper (surface is warm, not pure white). */
+  --bg: oklch(0.945 0.018 50);
+  --surface: oklch(0.978 0.014 55);
+  --surface-2: oklch(0.955 0.016 55);
+  --surface-inset: oklch(0.945 0.014 55);
+  --border: oklch(0.820 0.020 50);
+  --border-strong: oklch(0.560 0.022 52);
+  --text: oklch(0.255 0.020 55);
+  --muted: oklch(0.470 0.020 55);
+  --faint: oklch(0.490 0.020 55);
+  --data-ink: oklch(0.420 0.022 55); /* single-series data marks use neutral ink, never the action color */
+  /* Dark-on-paper category variants; same hues, lower lightness. */
+  --cat-1: oklch(0.50 0.14 205);
+  --cat-2: oklch(0.48 0.15 290);
+  --cat-3: oklch(0.50 0.15 330);
+  --cat-4: oklch(0.50 0.13 130);
+  --cat-5: oklch(0.52 0.13 95);
+  --cat-6: oklch(0.46 0.15 45);
+  --accent: oklch(0.470 0.130 258);
+  --accent-text: oklch(0.430 0.130 258);
+  /* Oxidized Brass (#7A5B28): the light-theme current-location indicator. 5.31:1 vs --bg. */
+  --brass: oklch(0.493 0.079 78);
+  --accent-weak: oklch(0.930 0.040 255);
+  --on-accent: oklch(0.980 0.015 55);
+  --cost-ok: oklch(0.500 0.110 160);
+  --cost-warn: oklch(0.400 0.130 60);
+  /* Monotonic L ramp, ok .50 / warn .40 / high .30 — ≥0.10 L between adjacent steps,
+     ok↔high 0.20, so severity survives grayscale + red-green CVD, not hue alone. */
+  --cost-high: oklch(0.300 0.190 28);
+  --surface-raised: oklch(0.955 0.016 55);
+  --focus-ring: oklch(0.470 0.130 258);
+  --shadow: 0 1px 2px oklch(0.55 0.02 55 / 0.12), 0 8px 24px oklch(0.55 0.02 55 / 0.12);
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---- high-contrast & forced-colors ----
+   The OUTER accessibility guard. It WINS over both the system-accent bridge and native materials:
+   a user who asked the OS for more contrast or a forced palette gets it,
+   full stop. `!important` on the token remaps is deliberate — the per-identity `[data-identity]
+   [data-theme]` rules outrank a plain media-query selector, and this guard must beat them.
+   (The vibrancy shell is additionally force-opaqued next to its own rules in desktop.css, keyed off
+   the same media queries, since the mandatory flat render is the contrast reference — not the
+   translucent material.) */
+@media (prefers-contrast: more) {
+  :root,
+  [data-theme] {
+    /* Promote every hairline to the strong border tone so structure survives at high contrast. */
+    --border: var(--border-strong) !important;
+    --faint: var(--muted) !important;
+  }
+  :focus-visible {
+    outline-width: 3px !important;
+    outline-offset: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  /* Hand color control to the OS palette and convey control state through system keywords + borders,
+     never a color-mix wash (which the forced palette erases). */
+  .btn,
+  select,
+  input,
+  .input,
+  .section {
+    border: 1px solid ButtonText;
+  }
+  .btn.primary {
+    background: ButtonText;
+    color: ButtonFace;
+    border-color: ButtonText;
+  }
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: Highlight;
+    color: HighlightText;
+  }
+}

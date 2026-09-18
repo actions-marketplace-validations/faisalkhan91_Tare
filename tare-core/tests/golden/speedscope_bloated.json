@@ -1,0 +1,497 @@
+{
+  "$schema": "https://www.speedscope.app/file-format-schema.json",
+  "activeProfileIndex": 0,
+  "exporter": "tare@0.1.0",
+  "name": "tare run bloated_system_prompt",
+  "profiles": [
+    {
+      "endValue": 9941,
+      "events": [
+        {
+          "at": 0,
+          "frame": 0,
+          "type": "O"
+        },
+        {
+          "at": 0,
+          "frame": 1,
+          "type": "O"
+        },
+        {
+          "at": 0,
+          "frame": 2,
+          "type": "O"
+        },
+        {
+          "at": 0,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 3242,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 3242,
+          "frame": 2,
+          "type": "C"
+        },
+        {
+          "at": 3242,
+          "frame": 4,
+          "type": "O"
+        },
+        {
+          "at": 3242,
+          "frame": 5,
+          "type": "O"
+        },
+        {
+          "at": 3306,
+          "frame": 5,
+          "type": "C"
+        },
+        {
+          "at": 3306,
+          "frame": 4,
+          "type": "C"
+        },
+        {
+          "at": 3306,
+          "frame": 6,
+          "type": "O"
+        },
+        {
+          "at": 3306,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 3313,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 3313,
+          "frame": 6,
+          "type": "C"
+        },
+        {
+          "at": 3313,
+          "frame": 1,
+          "type": "C"
+        },
+        {
+          "at": 3313,
+          "frame": 7,
+          "type": "O"
+        },
+        {
+          "at": 3313,
+          "frame": 2,
+          "type": "O"
+        },
+        {
+          "at": 3313,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 6553,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 6553,
+          "frame": 2,
+          "type": "C"
+        },
+        {
+          "at": 6553,
+          "frame": 4,
+          "type": "O"
+        },
+        {
+          "at": 6553,
+          "frame": 5,
+          "type": "O"
+        },
+        {
+          "at": 6617,
+          "frame": 5,
+          "type": "C"
+        },
+        {
+          "at": 6617,
+          "frame": 4,
+          "type": "C"
+        },
+        {
+          "at": 6617,
+          "frame": 6,
+          "type": "O"
+        },
+        {
+          "at": 6617,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 6627,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 6627,
+          "frame": 6,
+          "type": "C"
+        },
+        {
+          "at": 6627,
+          "frame": 7,
+          "type": "C"
+        },
+        {
+          "at": 6627,
+          "frame": 8,
+          "type": "O"
+        },
+        {
+          "at": 6627,
+          "frame": 2,
+          "type": "O"
+        },
+        {
+          "at": 6627,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 9869,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 9869,
+          "frame": 2,
+          "type": "C"
+        },
+        {
+          "at": 9869,
+          "frame": 4,
+          "type": "O"
+        },
+        {
+          "at": 9869,
+          "frame": 5,
+          "type": "O"
+        },
+        {
+          "at": 9933,
+          "frame": 5,
+          "type": "C"
+        },
+        {
+          "at": 9933,
+          "frame": 4,
+          "type": "C"
+        },
+        {
+          "at": 9933,
+          "frame": 6,
+          "type": "O"
+        },
+        {
+          "at": 9933,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 9941,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 9941,
+          "frame": 6,
+          "type": "C"
+        },
+        {
+          "at": 9941,
+          "frame": 8,
+          "type": "C"
+        },
+        {
+          "at": 9941,
+          "frame": 0,
+          "type": "C"
+        }
+      ],
+      "name": "tokens",
+      "startValue": 0,
+      "type": "evented",
+      "unit": "none"
+    },
+    {
+      "endValue": 53545,
+      "events": [
+        {
+          "at": 0,
+          "frame": 0,
+          "type": "O"
+        },
+        {
+          "at": 0,
+          "frame": 1,
+          "type": "O"
+        },
+        {
+          "at": 0,
+          "frame": 2,
+          "type": "O"
+        },
+        {
+          "at": 0,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 16210,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 16210,
+          "frame": 2,
+          "type": "C"
+        },
+        {
+          "at": 16210,
+          "frame": 4,
+          "type": "O"
+        },
+        {
+          "at": 16210,
+          "frame": 5,
+          "type": "O"
+        },
+        {
+          "at": 17810,
+          "frame": 5,
+          "type": "C"
+        },
+        {
+          "at": 17810,
+          "frame": 4,
+          "type": "C"
+        },
+        {
+          "at": 17810,
+          "frame": 6,
+          "type": "O"
+        },
+        {
+          "at": 17810,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 17845,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 17845,
+          "frame": 6,
+          "type": "C"
+        },
+        {
+          "at": 17845,
+          "frame": 1,
+          "type": "C"
+        },
+        {
+          "at": 17845,
+          "frame": 7,
+          "type": "O"
+        },
+        {
+          "at": 17845,
+          "frame": 2,
+          "type": "O"
+        },
+        {
+          "at": 17845,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 34045,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 34045,
+          "frame": 2,
+          "type": "C"
+        },
+        {
+          "at": 34045,
+          "frame": 4,
+          "type": "O"
+        },
+        {
+          "at": 34045,
+          "frame": 5,
+          "type": "O"
+        },
+        {
+          "at": 35645,
+          "frame": 5,
+          "type": "C"
+        },
+        {
+          "at": 35645,
+          "frame": 4,
+          "type": "C"
+        },
+        {
+          "at": 35645,
+          "frame": 6,
+          "type": "O"
+        },
+        {
+          "at": 35645,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 35695,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 35695,
+          "frame": 6,
+          "type": "C"
+        },
+        {
+          "at": 35695,
+          "frame": 7,
+          "type": "C"
+        },
+        {
+          "at": 35695,
+          "frame": 8,
+          "type": "O"
+        },
+        {
+          "at": 35695,
+          "frame": 2,
+          "type": "O"
+        },
+        {
+          "at": 35695,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 51905,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 51905,
+          "frame": 2,
+          "type": "C"
+        },
+        {
+          "at": 51905,
+          "frame": 4,
+          "type": "O"
+        },
+        {
+          "at": 51905,
+          "frame": 5,
+          "type": "O"
+        },
+        {
+          "at": 53505,
+          "frame": 5,
+          "type": "C"
+        },
+        {
+          "at": 53505,
+          "frame": 4,
+          "type": "C"
+        },
+        {
+          "at": 53505,
+          "frame": 6,
+          "type": "O"
+        },
+        {
+          "at": 53505,
+          "frame": 3,
+          "type": "O"
+        },
+        {
+          "at": 53545,
+          "frame": 3,
+          "type": "C"
+        },
+        {
+          "at": 53545,
+          "frame": 6,
+          "type": "C"
+        },
+        {
+          "at": 53545,
+          "frame": 8,
+          "type": "C"
+        },
+        {
+          "at": 53545,
+          "frame": 0,
+          "type": "C"
+        }
+      ],
+      "name": "micro-dollars",
+      "startValue": 0,
+      "type": "evented",
+      "unit": "none"
+    }
+  ],
+  "shared": {
+    "frames": [
+      {
+        "name": "run bloated_system_prompt"
+      },
+      {
+        "name": "step 1 · claude-opus-4-8"
+      },
+      {
+        "name": "System prompt"
+      },
+      {
+        "name": "fresh"
+      },
+      {
+        "name": "Output"
+      },
+      {
+        "name": "output"
+      },
+      {
+        "name": "User messages"
+      },
+      {
+        "name": "step 2 · claude-opus-4-8"
+      },
+      {
+        "name": "step 3 · claude-opus-4-8"
+      }
+    ]
+  }
+}

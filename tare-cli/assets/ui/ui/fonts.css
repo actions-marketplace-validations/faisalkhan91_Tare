@@ -1,0 +1,56 @@
+/* Self-hosted Calibrated Bench typefaces. Verbatim OFL WOFF2 vendored by
+   scripts/fetch-fonts.sh into web/assets/fonts/files/ (licenses in ../licenses/). Paths are relative to
+   the compiled stylesheet at dist/ui/fonts.css → ../assets/fonts/files/*.woff2 (build copies web/assets
+   → dist/assets, mirrored into both embedded targets by scripts/build-ui.sh). `font-display: swap` so a
+   slow/absent face never blocks text — the system fallbacks in tokens.css --font-* render immediately.
+   No @font-face for missing weights/styles: the browser synthesizes or falls back, never 404s. */
+
+/* Archivo (variable: wght 100–900, wdth 62–125) — compact instrument headings/labels. The wdth axis
+   provides SemiCondensed; the display role sets font-stretch: 87.5% (app.css). */
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("../assets/fonts/files/archivo-latin-standard-normal.woff2") format("woff2");
+}
+
+/* Atkinson Hyperlegible Next — UI and prose (accessibility-tuned letterforms). */
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/files/atkinson-hyperlegible-next-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../assets/fonts/files/atkinson-hyperlegible-next-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/files/atkinson-hyperlegible-next-latin-700-normal.woff2") format("woff2");
+}
+
+/* IBM Plex Mono — amounts, IDs, axes, receipts, aligned numeric tables (tabular figures). */
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/files/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../assets/fonts/files/ibm-plex-mono-latin-600-normal.woff2") format("woff2");
+}

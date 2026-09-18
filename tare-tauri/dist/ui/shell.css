@@ -1,0 +1,191 @@
+/* Shell layout + chrome. Owns the workbench frame: the adaptive layout
+   state (rail/panes at each container width) and the scoped workspace status bar. Loaded AFTER
+   app.css, so these rules keep the same cascade they had when they lived there. Component and
+   workspace styles live in components.css / workspaces.css; role tokens in tokens.css. */
+
+/* ---- static startup shell ---- */
+/* The pre-hydration skeleton inside #app reuses the shared .shell grid so the frame paints instantly
+   with the pre-resolved theme (no flash / no blank app). mountApp clears #app and replaces it once
+   ready — so only the loading hint needs its own style. */
+.startup-hint {
+  margin: var(--s-4);
+  color: var(--faint);
+  font-size: var(--fs-sm);
+}
+
+/* ---- adaptive workbench layout ---- */
+/* The layout mode is stamped on .shell by the container-query state machine (shell/adaptivePanes.ts),
+   keyed on the workbench's OWN inline-size (Windows-Snap-safe), not the raw viewport. The rail
+   collapses to a narrow column (rail-icons), then folds behind the workspace switcher (stacked/
+   single) — it NEVER becomes a horizontally scrolling route strip. More specific than the viewport
+   media query in app.css, so the container-driven mode wins when both could apply. */
+.shell[data-layout="rail-icons"] {
+  --sidebar-w: 60px;
+}
+.shell[data-layout="rail-icons"] .brand {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 0;
+  overflow: hidden;
+}
+.shell[data-layout="rail-icons"] .brand-name,
+.shell[data-layout="rail-icons"] .nav-section,
+.shell[data-layout="rail-icons"] .nav-item-label,
+.shell[data-layout="rail-icons"] .nav-commands-label,
+.shell[data-layout="rail-icons"] .nav-commands-hint,
+.shell[data-layout="rail-icons"] .nav-tagline,
+.shell[data-layout="rail-icons"] .nav-views,
+.shell[data-layout="rail-icons"] .nav-runs {
+  display: none;
+}
+.shell[data-layout="rail-icons"] .sidebar {
+  align-items: stretch;
+  padding: var(--s-2);
+}
+.shell[data-layout="rail-icons"] .nav-item,
+.shell[data-layout="rail-icons"] .nav-commands {
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-height: 40px;
+  padding-inline: var(--s-2);
+  margin-inline: 0;
+}
+.shell[data-layout="rail-icons"] .nav-footer {
+  width: 100%;
+  padding-top: var(--s-2);
+}
+.shell[data-layout="stacked"],
+.shell[data-layout="single"] {
+  grid-template-columns: 1fr;
+  /* Four named rows need four explicit tracks. Both chrome rows are content-sized: the topbar can
+     wrap its custom-range fields on a narrow window, so a fixed --topbar-h track would let the
+     wrapped controls paint over the workspace below. */
+  grid-template-rows: auto auto minmax(0, 1fr) 28px;
+  grid-template-areas:
+    "brand"
+    "topbar"
+    "main"
+    "status";
+}
+.shell[data-layout="stacked"] .sidebar,
+.shell[data-layout="single"] .sidebar {
+  display: none;
+}
+
+/* The rail becomes a modal drawer once its grid column disappears. The trigger lives in the brand
+   row so navigation remains visible before any workspace-specific content mounts. */
+.nav-drawer-trigger,
+.nav-drawer-header,
+.nav-drawer-backdrop {
+  display: none;
+}
+.shell[data-layout="stacked"] .nav-drawer-trigger,
+.shell[data-layout="single"] .nav-drawer-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 36px;
+  margin-inline-start: auto;
+}
+.shell[data-layout="stacked"] .nav-drawer-backdrop:not([hidden]),
+.shell[data-layout="single"] .nav-drawer-backdrop:not([hidden]) {
+  display: block;
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  background: color-mix(in srgb, var(--data-ink) 38%, transparent);
+}
+.shell[data-layout="stacked"][data-nav-drawer-state] .sidebar,
+.shell[data-layout="single"][data-nav-drawer-state] .sidebar {
+  display: flex;
+  position: fixed;
+  z-index: 80;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: min(320px, calc(100vw - 40px));
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: var(--s-3);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-inline-end: 1px solid var(--border-strong);
+  border-block-end: 0;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-24px);
+  transition: transform var(--dur-panel-exit) var(--ease-exit);
+}
+.shell[data-layout="stacked"][data-nav-drawer-state="open"] .sidebar,
+.shell[data-layout="single"][data-nav-drawer-state="open"] .sidebar {
+  transform: translateX(0);
+  transition-duration: var(--dur-panel-enter);
+  transition-timing-function: var(--ease-standard);
+}
+.shell[data-layout="stacked"].nav-drawer-open .nav-drawer-header,
+.shell[data-layout="single"].nav-drawer-open .nav-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  margin-block-end: var(--s-2);
+  padding-inline-start: var(--s-3);
+  border-block-end: 1px solid var(--border);
+}
+.nav-drawer-title {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+}
+.nav-drawer-close {
+  min-width: 36px;
+  min-height: 36px;
+}
+/* Undo the older viewport-only horizontal-rail fallback inside the canonical drawer. */
+.shell.nav-drawer-open .nav-views,
+.shell.nav-drawer-open .nav-runs,
+.shell.nav-drawer-open .nav-footer {
+  display: block;
+  margin: initial;
+}
+.shell.nav-drawer-open .nav-footer {
+  margin-block-start: auto;
+  padding-block-start: var(--s-2);
+  border-block-start: 1px solid var(--border);
+}
+.shell.nav-drawer-open .nav-section,
+.shell.nav-drawer-open .nav-tagline,
+.shell.nav-drawer-open .nav-empty {
+  display: block;
+}
+.shell.nav-drawer-open .nav-view-row {
+  display: grid;
+}
+.shell.nav-drawer-open .nav-item {
+  white-space: normal;
+}
+
+/* ---- scoped workspace status bar ---- */
+/* The active cohort's count + spend reads a touch brighter than the surrounding muted facts. Empty
+   by default — a workspace sets it via setScope; it is never an unrelated Today total. */
+.status-scope {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: slashed-zero tabular-nums;
+}
+.status-scope:empty {
+  display: none;
+}
+/* Trust/provenance warning; hidden until a workspace raises one. Uses severity color, not brass. */
+.status-warning[hidden] {
+  display: none;
+}
+.status-warning {
+  /* Was `var(--warn, var(--signal-coral, #e06b5f))` — NEITHER token has ever existed, so this always
+     fell through to the raw hex: 3.05:1 on the light surface at 11px, and invisible to the
+     prefers-contrast token remap that every real role token participates in.
+     `--cost-warn` is the defined role for "warning" severity. */
+  color: var(--cost-warn);
+}

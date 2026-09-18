@@ -1,0 +1,18 @@
+[package]
+name = "tare-proxy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tare-core = { workspace = true }
+serde_json = { workspace = true }
+axum = "0.8.9"
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros", "sync", "net", "io-util", "time"] }
+reqwest = { version = "0.13.4", default-features = false, features = ["stream"] }
+futures-util = "0.3.32"
+async-stream = "0.3.6"
+bytes = "1.12.0"
+
+[dev-dependencies]
+tare-store.workspace = true

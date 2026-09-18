@@ -1,0 +1,16 @@
+[package]
+name = "tare-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Tare core: wire parsers, cost model, attribution, flamegraph + SVG (pure, no I/O)."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = "0.8"
+# Secret/PII redaction patterns. Already in the workspace lock (transitive) + cached, so
+# the offline gate is unaffected.
+regex = "1"
+jiff = { version = "0.2.32", features = ["tzdb-bundle-always"] }
+tempfile = "3.27"

@@ -1,0 +1,11 @@
+[package]
+name = "tare-store"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tare-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rusqlite = { version = "0.32", features = ["bundled"] }

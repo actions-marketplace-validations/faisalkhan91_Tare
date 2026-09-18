@@ -1,0 +1,120 @@
+# Desktop release — TAG-TRIGGERED ONLY, fully separate from the offline gate (scripts/ci.sh).
+# This workflow compile-checks platform bundles; OS signing/notarization remains the manual,
+# credentialed step documented in docs/RELEASE.md. It never runs on push/PR, so the gate stays
+# headless + offline.
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Default all jobs to read-only. Only the CLI publisher receives release-write authority below.
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Require tag, workspace, and desktop versions to match
+        env:
+          TARE_RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/check-release-metadata.py --tag "$TARE_RELEASE_TAG"
+      - name: Refuse to release if secrets are committed
+        run: |
+          # Scan secret MATERIAL, not environment-variable names. The old APPLE_|TAURI_SIGNING
+          # expression matched this workflow's own legitimate secret-context references and
+          # made every tag fail before a build could start.
+          if git grep -nE -e 'sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN ([A-Z0-9 ]+ )?PRIVATE KEY-----' -- ':!*.md' ':!tare-core/src/redact.rs' ':!tare-proxy/tests/proxy_integration.rs'; then
+            echo "::error::secret-like material found in the tree — aborting release" >&2
+            exit 1
+          fi
+          if git ls-files | grep -Ei '\.(p12|pfx)$'; then
+            echo "::error::private certificate container is tracked — aborting release" >&2
+            exit 1
+          fi
+          echo "clean"
+
+  # Standalone `tare` CLI binary, per platform — the dependency-free front door that
+  # scripts/install.sh downloads (no Rust toolchain needed to TRY Tare). The web viewer assets
+  # are already committed under tare-cli/assets/ui, so this needs no frontend build. Each asset is
+  # a tar.gz containing a single `tare` binary plus a sibling .sha256 install.sh verifies.
+  cli:
+    needs: secret-scan
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - os: macos-15
+            target: aarch64-apple-darwin
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            cross_linker: gcc-aarch64-linux-gnu
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Install cross linker (aarch64 linux)
+        if: ${{ matrix.cross_linker != '' }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y ${{ matrix.cross_linker }}
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
+      - name: Build CLI (release, no GUI)
+        run: cargo build --release --locked -p tare-cli --target ${{ matrix.target }}
+      - name: Package + checksum
+        shell: bash
+        run: |
+          asset="tare-${{ matrix.target }}.tar.gz"
+          tar -czf "$asset" -C "target/${{ matrix.target }}/release" tare
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "$asset" > "$asset.sha256"
+          else
+            shasum -a 256 "$asset" > "$asset.sha256"
+          fi
+      - name: Upload to release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          files: |
+            tare-${{ matrix.target }}.tar.gz
+            tare-${{ matrix.target }}.tar.gz.sha256
+
+  bundle:
+    needs: secret-scan
+    strategy:
+      matrix:
+        # Exercise both currently supported macOS architectures. `macos-13` was retired by
+        # GitHub Actions; explicit current labels also avoid an architecture flip in `-latest`.
+        os: [macos-15, macos-15-intel, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+      - name: Install Linux desktop dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci
+      - name: Build and sync frontend embeds
+        run: bash scripts/build-ui.sh
+      - name: Bundle (GUI feature + release config)
+        working-directory: tare-tauri
+        run: |
+          # Pin the release CLI exactly and honor that crate's lockfile. A floating latest CLI can
+          # cross a configuration/schema boundary even when this repository's Cargo.lock is stable.
+          cargo install tauri-cli --version '=2.11.3' --locked --force
+          cargo tauri build --features gui -c tauri.release.conf.json -- --locked

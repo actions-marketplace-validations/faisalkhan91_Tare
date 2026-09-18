@@ -1,0 +1,4 @@
+# Keep SSE + golden fixtures byte-exact (no autocrlf, no normalization).
+*.sse -text
+fixtures/** -text
+tare-core/tests/golden/** -text
